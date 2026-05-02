@@ -63,7 +63,7 @@ This project is submitted as a **Final Year Project (Semester 5)** for the degre
 > Universiti Tun Hussein Onn Malaysia (UTHM)
 
 **Developer:** Elsamani Ahmed
-**Supervisor:** *(UTHM Faculty)*
+**Supervisor:** *(Prof.Nazri Bin Mohd Nawi)*
 **Organisation Partner:** Al-Kalim Al-Tayyib Charity Organisation
 
 The project applies software engineering principles including MVC architecture, role-based access control (RBAC), and relational database design to solve a real-world problem for a functioning charitable institution.
