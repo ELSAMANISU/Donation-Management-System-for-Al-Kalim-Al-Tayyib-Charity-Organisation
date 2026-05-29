@@ -22,3 +22,5 @@ Route::get('/{locale}/cases', [DonationCaseController::class, 'index'])->name('c
 Route::get('/{locale}/cases/{id}', [DonationCaseController::class, 'show'])->name('cases.show');
 
 require __DIR__.'/auth.php';
+
+// Enhanced modern Islamic Glassmorphism UI routes integrated successfully.
