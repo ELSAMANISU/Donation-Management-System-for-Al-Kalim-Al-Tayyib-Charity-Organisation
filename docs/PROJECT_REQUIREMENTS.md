@@ -1,0 +1,226 @@
+# Project Requirements
+
+## 1. Purpose and first-version boundary
+
+The Donation Management System supports Al-Kalim Al-Tayyib Charity Organisation in receiving simulated donations, reviewing help applications, publishing privacy-safe fundraising campaigns, recording aid delivery, and reporting outcomes.
+
+The first version must use Laravel 12, PHP 8.2+, MySQL/MariaDB, Blade, Bootstrap, Tailwind where already used, and vanilla JavaScript. It must be bilingual in Arabic and English, responsive, accessible, secure, and compatible with the existing interface. The primary currency is Sudanese Pound (SDG / ج.س).
+
+Real payment processing, BigQuery, email notifications, and administrator specialization by category are not part of the first version.
+
+## 2. Actors and permissions
+
+### Visitor
+
+- View the homepage, organisation information, categories, campaigns, completed campaigns, statistics, and campaign details without signing in.
+- Donate as a guest through the simulated Sandbox Checkout.
+
+### User
+
+- Has all visitor capabilities.
+- Donate and view an account donation history.
+- Download receipts for account donations.
+- Submit and manage a help application, provide requested information, upload additional documents, communicate with administrators within the application, and appeal a rejection.
+- Have no more than one open help application at a time.
+
+### Admin
+
+- Review all help applications and their private documents in the first version.
+- Request information, approve or reject applications, and manage the later campaign and aid-delivery workflow.
+- Manage campaigns, categories, transactions, aid delivery, reports, users, internal notifications, and relevant settings.
+- Search users, inspect activity, disable accounts, and reactivate accounts.
+- Must not be created through public registration.
+
+### Super admin
+
+- Has all admin permissions.
+- Exclusively creates and manages administrator accounts.
+- Must not be created through public registration.
+
+## 3. Required modules
+
+### Public site and categories
+
+- Public pages expose organisation information, statistics, categories, active campaigns, completed campaigns, and campaign details.
+- Categories appear as cards; selecting a category displays campaign cards generated dynamically from database records.
+- A campaign card displays its image, title, summary, target amount, raised amount, remaining amount, progress, status, details action, and donation action.
+- Featured and urgent campaigns may appear on the homepage.
+- Completed campaigns remain publicly visible for transparency.
+
+### Donations and Sandbox Checkout
+
+- Allow both guest and registered donations without requiring guests to register.
+- Collect only the minimum guest information needed for a receipt.
+- Let donors display a public name, first name only, or remain anonymous.
+- Simulate `initiated`, `pending`, `completed`, `failed`, `cancelled`, and `refunded` transactions.
+- Assign every transaction a unique reference and provide a receipt that clearly states it is a sandbox simulation and no real money was processed.
+- Give registered donors a donation history and downloadable receipts.
+- Allow administrators to perform simulated refunds.
+
+### Help applications
+
+- Allow a signed-in user to create and save a draft application.
+- Capture personal details, identity or passport information, need category, requested amount, story, supporting documents, preferred receiving method, data-processing consent, and preferred public identity presentation.
+- Support receiving by bank account, electronic wallet, trusted person's account, or another specified method.
+- Store recipient name, provider or bank name, and account or wallet identifier securely; display the identifier only in masked form.
+- Permit requested additional-document uploads and in-application communication between the applicant and administrators.
+- After rejection, require the applicant to choose either to appeal the rejected application or to close it and submit a new application. The applicant cannot have an open appeal and a new open application at the same time, and opening a new application permanently ends the option to appeal the previous rejected application.
+- Detect possible duplicate or previous applications using verified identity information such as identity or passport number. Show reviewing administrators a warning and, when authorized, links to related applications; never reject automatically and require a documented administrator decision.
+- Never expose sensitive personal data or documents publicly.
+
+### Application review and campaign creation
+
+- Let administrators view all applications and private supporting documents in the first version.
+- Let administrators request more information, approve an application, or reject it with a reason.
+- After approval, require an administrator to prepare a privacy-safe public story and choose the category, image, target amount, priority, featured state, and whether the campaign remains `draft` or is published as `active`.
+- Publishing changes the campaign to `active`, records `published_at`, and creates the public campaign card in the selected category.
+- Preserve a private link between the campaign and its source application.
+
+### Campaign management
+
+- Support campaign creation and management without a mandatory expiry date.
+- Allow administrators to pause or cancel a campaign only with a documented reason.
+- Automatically mark a campaign funded when its target is reached.
+- Stop accepting donations once a campaign is fully funded.
+- Retain completed campaigns publicly and allow a privacy-safe impact update after aid delivery.
+
+### Aid delivery
+
+- Allow aid to be recorded as one payment or multiple instalments.
+- For each delivery, store the amount, date, receiving method, internal transfer reference, private proof document, delivering administrator, and notes.
+- Track total raised, total delivered, and remaining balance.
+- Keep proof documents private.
+- Require recorded delivery and a published impact update before completion.
+
+### User, category, notification, audit, and settings administration
+
+- Let administrators list and search users, view activity, disable accounts, and reactivate accounts.
+- Reserve administrator-account management for super administrators.
+- Store Arabic and English category names and descriptions, icon, image, display order, active or hidden state, soft-deletion state, and restoration state.
+- Prevent permanent deletion of a category that has campaigns unless those campaigns are handled safely.
+- Provide internal notifications for new applications, donations, information requests, application status changes, campaign creation and funding, and aid delivery.
+- Audit important user and administrator actions.
+- Provide settings for organisation identity, logo, contact details, currency, minimum donation, upload limits, and whether help applications are open.
+
+## 4. Workflows
+
+### Donation workflow
+
+1. A visitor or registered user selects an eligible campaign and donation amount.
+2. If the requested amount exceeds the remaining target, the system offers only the remaining required amount.
+3. The donor provides the required receipt information and chooses their public identity display.
+4. Sandbox Checkout records one idempotent transaction with a unique reference and a simulated outcome.
+5. Only a completed transaction increases the campaign total. Duplicate submission must not create a second financial effect.
+6. Reaching the target changes the campaign to funded and closes it to further donations.
+7. Before aid delivery begins, a simulated refund reverses the completed contribution correctly within a database transaction and returns a `funded` campaign to `active` if its raised amount falls below the target. After aid delivery begins, ordinary refunds are prohibited and any exceptional correction is processed as a separately audited administrative adjustment.
+
+### Beneficiary workflow
+
+1. A signed-in user starts or resumes a draft while having no other open application.
+2. The user supplies all required information, documents, receiving details, consent, and public-identity choice, then submits the application. The system checks verified identity information for possible duplicate or previous applications and flags possible matches for administrative review.
+3. An administrator reviews it, including any duplicate warning and authorized links to related applications, and may request information, approve it, or reject it with a documented reason. A duplicate warning never determines the decision automatically.
+4. The user may respond and upload requested documents within the application.
+5. After rejection, the user chooses either to appeal the rejected application or to close it and submit a new application. An open appeal and a new open application cannot coexist, and opening the new application makes the previous rejection ineligible for appeal.
+6. An approved application may be converted into a privately linked, privacy-safe campaign and then published.
+
+### Campaign and delivery workflow
+
+1. An administrator prepares a draft campaign from an approved application.
+2. Publishing sets the campaign status to `active`, stores the publication time separately in `published_at`, exposes its database-generated card, and accepts donations until paused, cancelled, or fully funded.
+3. Funding completion changes its status automatically.
+4. An administrator records one or more private, auditable aid deliveries.
+5. After delivery, an administrator publishes a privacy-safe impact update.
+6. The campaign can be completed only after delivery is recorded and the impact update is published.
+
+## 5. Status lifecycles
+
+### Application statuses
+
+`draft` → `pending` → `under_review`
+
+The canonical help application statuses are `draft`, `pending`, `under_review`, `additional_information_required`, `approved`, `rejected`, `appealed`, `converted_to_campaign`, `campaign_active`, `aid_delivery`, `completed`, and `closed`.
+
+From `under_review`, an application may move to `additional_information_required`, `approved`, or `rejected`. Requested information returns the application to `under_review`. After `rejected`, the applicant may move the application to `appealed`, or move it to `closed` and create a new application, but not both. An open appeal and a new open application cannot coexist. Once a new application is opened, the previous rejected application cannot move to `appealed`. An approved application may progress through `converted_to_campaign`, `campaign_active`, `aid_delivery`, and `completed`.
+
+Transitions must be authorized and auditable. Closing a rejected application makes the applicant eligible to create a new application.
+
+### Campaign statuses
+
+The canonical campaign statuses are `draft`, `active`, `paused`, `funded`, `aid_delivery`, `completed`, and `cancelled`.
+
+- Publishing moves a campaign from `draft` to `active`; publication is represented by the `active` status and its time is stored separately in `published_at`.
+- An authorized administrator may pause or cancel with a documented reason.
+- Reaching the target automatically moves an active campaign to funded.
+- Before aid delivery begins, if a refund reduces the raised amount below the target, the campaign automatically moves from `funded` back to `active`.
+- Delivery activity moves a funded campaign into `aid_delivery`.
+- Completion requires recorded delivery and an impact update.
+
+### Transaction statuses
+
+The canonical Sandbox transaction statuses are `initiated`, `pending`, `completed`, `failed`, `cancelled`, and `refunded`. Only `completed` transactions count toward raised totals. Before aid delivery begins, refunds must correctly reverse the applicable contribution and return a `funded` campaign to `active` automatically if its raised amount falls below the target. After aid delivery begins, ordinary simulated refunds are prohibited; any exceptional financial correction must be a separately audited administrative adjustment that preserves the rule that delivered aid never exceeds valid raised funds.
+
+## 6. Business rules
+
+- Use MySQL/MariaDB as the operational database and SDG / ج.س as the primary currency.
+- Public campaign content must be privacy-safe and separate from private beneficiary information.
+- A user can have only one open application at a time. An open appeal and a new open application cannot coexist, and opening a new application ends eligibility to appeal the previous rejected application.
+- On submission, compare verified identity information such as identity or passport number to detect possible duplicate or previous applications. A match creates an administrator-visible warning and authorized links to related applications, but never an automatic rejection; the administrator must document the decision.
+- Campaigns do not require an expiry date.
+- A published campaign has status `active`, with its publication time stored separately in `published_at`.
+- Campaign totals derive only from completed transactions, adjusted by valid refunds.
+- Each transaction reference is unique; payment and refund actions are idempotent.
+- Before aid delivery begins, a refund that reduces a funded campaign below its target automatically returns it from `funded` to `active`.
+- After aid delivery begins, ordinary simulated refunds are prohibited. Exceptional financial corrections require separately audited administrative adjustments, and delivered aid must never exceed valid raised funds.
+- A fully funded campaign accepts no further donations.
+- A donation above the outstanding target is reduced by offering only the remaining amount.
+- Aid may be delivered in one or multiple instalments, while raised, delivered, and remaining totals remain consistent.
+- Category deletion must preserve or safely handle associated campaigns.
+- Email is not required; first-version notifications are internal.
+
+## 7. Security and quality requirements
+
+- Enforce role-based authorization with middleware, Policies, and server-side checks.
+- Use Form Request validation and retain CSRF protection and secure password hashing.
+- Restrict private documents to their owner and authorized administrators; store them outside the public web root.
+- Validate file extension, MIME type, size, and filename.
+- Store receiving details securely and show account or wallet identifiers only in masked form.
+- Never store full card numbers, CVV, or real payment details.
+- Rate-limit sensitive actions.
+- Use database transactions for financial state changes and idempotency controls for sandbox payments and refunds.
+- Audit important user and administrator actions.
+- Use soft deletion wherever recovery is required.
+- Provide automated feature tests for critical workflows, including authorization, financial state changes, private documents, and lifecycle rules.
+- Provide seeded demonstration accounts and data for the final presentation without exposing secrets.
+- Back up the operational MySQL/MariaDB database, privately stored beneficiary documents, uploaded campaign images, and other required storage files regularly through a defined, recoverable process. Protect backup files from public access, and document the recovery procedure so it can be tested.
+- Keep forms accessible and the interface responsive and bilingual.
+- Develop incrementally, make focused changes, and avoid unrelated refactoring.
+
+## 8. Reports
+
+Administrators must be able to view and download relevant reports as PDF and CSV for:
+
+- Total donations.
+- Donations by period and category.
+- Active, funded, completed, paused, and cancelled campaigns.
+- Successful/completed, pending, failed, cancelled, and refunded transactions.
+- Applications grouped by status.
+- Total raised, delivered, and remaining.
+
+## 9. Deferred and out-of-scope features
+
+- Real payment gateways and processing of real funds.
+- BigQuery or another operational database in place of MySQL/MariaDB.
+- Email notifications.
+- Administrator specialization or assignment by category. The authorization design must remain extensible so this can be added later.
+
+## 10. Acceptance principles
+
+- The first version implements only the approved features above and does not invent additional product scope.
+- All public browsing, donation, application, review, campaign, refund, delivery, administration, and reporting rules behave consistently with their canonical machine-readable statuses, stated permissions, and lifecycles; campaign publication uses `active` with a separate `published_at` value.
+- Sensitive data never appears in public content, private files require authorization, and no real payment credentials are collected or stored.
+- Financial totals and lifecycle transitions are transactional, idempotent where required, auditable, and covered by feature tests. Refunds can reactivate an underfunded campaign only before aid delivery; after delivery begins, corrections use separately audited administrative adjustments and delivered aid never exceeds valid raised funds.
+- Rejected applicants must choose between appeal and a closed rejection followed by a new application; the two paths cannot remain open together, and a new application ends the prior appeal option.
+- Duplicate detection based on verified identity information warns administrators and provides authorized related-application links without automatically rejecting an applicant; every decision remains documented and administrative.
+- Regular database and required-file backups are protected from public access, and their documented recovery procedure is testable.
+- Demonstration data supports the final presentation without weakening production-oriented security controls.
+- Changes preserve the existing public interface unless a task explicitly authorizes UI changes.
