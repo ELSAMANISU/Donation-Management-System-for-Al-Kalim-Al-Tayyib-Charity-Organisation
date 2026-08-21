@@ -3,8 +3,11 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Enums\UserRole;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -44,6 +47,25 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'role' => UserRole::class,
+            'is_active' => 'boolean',
+            'disabled_at' => 'datetime',
         ];
+    }
+
+    /**
+     * Get the administrator who disabled this account.
+     */
+    public function disabledBy(): BelongsTo
+    {
+        return $this->belongsTo(self::class, 'disabled_by');
+    }
+
+    /**
+     * Get the accounts disabled by this administrator.
+     */
+    public function disabledAccounts(): HasMany
+    {
+        return $this->hasMany(self::class, 'disabled_by');
     }
 }
