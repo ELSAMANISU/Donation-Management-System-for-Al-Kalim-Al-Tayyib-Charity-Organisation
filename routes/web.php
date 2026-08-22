@@ -22,6 +22,13 @@ Route::get('/admin/users', [AdminUserController::class, 'index'])
     ->middleware(['auth', 'role:admin,super_admin'])
     ->name('admin.users.index');
 
+Route::middleware(['auth', 'role:admin,super_admin', 'throttle:10,1'])->group(function () {
+    Route::patch('/admin/users/{user}/disable', [AdminUserController::class, 'disable'])
+        ->name('admin.users.disable');
+    Route::patch('/admin/users/{user}/reactivate', [AdminUserController::class, 'reactivate'])
+        ->name('admin.users.reactivate');
+});
+
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
