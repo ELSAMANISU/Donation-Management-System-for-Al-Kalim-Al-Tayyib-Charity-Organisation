@@ -30,6 +30,45 @@ class AuthenticationTest extends TestCase
         $response->assertRedirect('/');
     }
 
+    public function test_disabled_users_cannot_authenticate_with_correct_credentials(): void
+    {
+        $user = User::factory()->disabled()->create();
+
+        $response = $this->from('/login')->post('/login', [
+            'email' => $user->email,
+            'password' => 'password',
+        ]);
+
+        $this->assertGuest();
+        $response->assertRedirect('/login');
+        $response->assertSessionHasErrors([
+            'email' => trans('auth.failed'),
+        ]);
+    }
+
+    public function test_disabled_authenticated_user_is_logged_out_on_next_web_request(): void
+    {
+        $user = User::factory()->create();
+
+        $user->forceFill(['is_active' => false])->save();
+
+        $response = $this->actingAs($user)->get('/');
+
+        $this->assertGuest();
+        $response->assertRedirect(route('login'));
+        $response->assertSessionHasErrors([
+            'email' => trans('auth.failed'),
+        ]);
+    }
+
+    public function test_guests_can_access_the_public_homepage(): void
+    {
+        $response = $this->get('/');
+
+        $this->assertGuest();
+        $response->assertOk();
+    }
+
     public function test_users_can_not_authenticate_with_invalid_password(): void
     {
         $user = User::factory()->create();
