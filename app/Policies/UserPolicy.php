@@ -41,6 +41,14 @@ class UserPolicy
     }
 
     /**
+     * Determine whether the actor may access administrator management.
+     */
+    public function manageAdministrators(User $actor): bool
+    {
+        return $actor->hasRole(UserRole::SuperAdmin);
+    }
+
+    /**
      * Determine whether the actor may manage an administrator account.
      */
     public function manageAdministrator(User $actor, User $user): bool

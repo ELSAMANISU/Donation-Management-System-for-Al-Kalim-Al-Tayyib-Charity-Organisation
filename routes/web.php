@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\AdministratorController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\DonationCaseController;
@@ -17,6 +18,16 @@ Route::get('/dashboard', function () {
 Route::get('/admin', AdminDashboardController::class)
     ->middleware(['auth', 'role:admin,super_admin'])
     ->name('admin.dashboard');
+
+Route::middleware(['auth', 'role:super_admin'])->group(function () {
+    Route::get('/admin/administrators', [AdministratorController::class, 'index'])
+        ->name('admin.administrators.index');
+    Route::get('/admin/administrators/create', [AdministratorController::class, 'create'])
+        ->name('admin.administrators.create');
+    Route::post('/admin/administrators', [AdministratorController::class, 'store'])
+        ->middleware('throttle:6,1')
+        ->name('admin.administrators.store');
+});
 
 Route::get('/admin/users', [AdminUserController::class, 'index'])
     ->middleware(['auth', 'role:admin,super_admin'])

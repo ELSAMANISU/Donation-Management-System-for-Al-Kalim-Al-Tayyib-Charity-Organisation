@@ -58,6 +58,8 @@ class RequiredPasswordChangeTest extends TestCase
             ->get(route('password.change.required.edit'))
             ->assertOk()
             ->assertSee('A temporary password is in use')
+            ->assertSeeText('Change password / تغيير كلمة المرور')
+            ->assertSee('bg-indigo-600')
             ->assertSee('كلمة مرور مؤقتة');
 
         $this->post(route('logout'))->assertRedirect('/');

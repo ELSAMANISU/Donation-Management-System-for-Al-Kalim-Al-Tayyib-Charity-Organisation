@@ -21,6 +21,7 @@ class UserPolicyTest extends TestCase
         $this->assertFalse(Gate::forUser($actor)->allows('view', $target));
         $this->assertFalse(Gate::forUser($actor)->allows('changeAccountState', $target));
         $this->assertFalse(Gate::forUser($actor)->allows('createAdministrator', User::class));
+        $this->assertFalse(Gate::forUser($actor)->allows('manageAdministrators', User::class));
         $this->assertFalse(Gate::forUser($actor)->allows('changeRole', $target));
     }
 
@@ -54,6 +55,7 @@ class UserPolicyTest extends TestCase
         $this->assertFalse(Gate::forUser($actor)->allows('manageAdministrator', $admin));
         $this->assertFalse(Gate::forUser($actor)->allows('manageAdministrator', $superAdmin));
         $this->assertFalse(Gate::forUser($actor)->allows('createAdministrator', User::class));
+        $this->assertFalse(Gate::forUser($actor)->allows('manageAdministrators', User::class));
         $this->assertFalse(Gate::forUser($actor)->allows('changeRole', $admin));
         $this->assertFalse(Gate::forUser($actor)->allows('changeRole', $superAdmin));
     }
@@ -72,6 +74,7 @@ class UserPolicyTest extends TestCase
         $this->assertTrue(Gate::forUser($actor)->allows('changeAccountState', $user));
         $this->assertTrue(Gate::forUser($actor)->allows('changeAccountState', $admin));
         $this->assertTrue(Gate::forUser($actor)->allows('createAdministrator', User::class));
+        $this->assertTrue(Gate::forUser($actor)->allows('manageAdministrators', User::class));
         $this->assertTrue(Gate::forUser($actor)->allows('manageAdministrator', $admin));
         $this->assertTrue(Gate::forUser($actor)->allows('manageAdministrator', $superAdmin));
         $this->assertTrue(Gate::forUser($actor)->allows('changeRole', $user));
