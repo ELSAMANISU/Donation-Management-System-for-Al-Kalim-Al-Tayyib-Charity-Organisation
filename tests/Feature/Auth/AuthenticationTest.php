@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Auth;
 
+use App\Enums\UserRole;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -30,6 +31,47 @@ class AuthenticationTest extends TestCase
         $response->assertRedirect('/');
     }
 
+    public function test_normal_user_login_ignores_an_unauthorized_admin_intended_url(): void
+    {
+        $user = User::factory()->user()->create();
+
+        $this->get('/admin')->assertRedirect(route('login'));
+
+        $response = $this->post('/login', [
+            'email' => $user->email,
+            'password' => 'password',
+        ]);
+
+        $this->assertAuthenticatedAs($user);
+        $response->assertRedirect('/');
+    }
+
+    public function test_admin_is_redirected_to_administration_dashboard_after_login(): void
+    {
+        $admin = User::factory()->admin()->create();
+
+        $response = $this->post('/login', [
+            'email' => $admin->email,
+            'password' => 'password',
+        ]);
+
+        $this->assertAuthenticatedAs($admin);
+        $response->assertRedirect(route('admin.dashboard'));
+    }
+
+    public function test_super_admin_is_redirected_to_administration_dashboard_after_login(): void
+    {
+        $superAdmin = User::factory()->superAdmin()->create();
+
+        $response = $this->post('/login', [
+            'email' => $superAdmin->email,
+            'password' => 'password',
+        ]);
+
+        $this->assertAuthenticatedAs($superAdmin);
+        $response->assertRedirect(route('admin.dashboard'));
+    }
+
     public function test_disabled_users_cannot_authenticate_with_correct_credentials(): void
     {
         $user = User::factory()->disabled()->create();
@@ -39,6 +81,23 @@ class AuthenticationTest extends TestCase
             'password' => 'password',
         ]);
 
+        $this->assertGuest();
+        $response->assertRedirect('/login');
+        $response->assertSessionHasErrors([
+            'email' => trans('auth.failed'),
+        ]);
+    }
+
+    public function test_disabled_administrator_cannot_authenticate_with_correct_credentials(): void
+    {
+        $admin = User::factory()->admin()->disabled()->create();
+
+        $response = $this->from('/login')->post('/login', [
+            'email' => $admin->email,
+            'password' => 'password',
+        ]);
+
+        $this->assertSame(UserRole::Admin, $admin->role);
         $this->assertGuest();
         $response->assertRedirect('/login');
         $response->assertSessionHasErrors([
@@ -73,12 +132,16 @@ class AuthenticationTest extends TestCase
     {
         $user = User::factory()->create();
 
-        $this->post('/login', [
+        $response = $this->from('/login')->post('/login', [
             'email' => $user->email,
             'password' => 'wrong-password',
         ]);
 
         $this->assertGuest();
+        $response->assertRedirect('/login');
+        $response->assertSessionHasErrors([
+            'email' => trans('auth.failed'),
+        ]);
     }
 
     public function test_users_can_logout(): void
