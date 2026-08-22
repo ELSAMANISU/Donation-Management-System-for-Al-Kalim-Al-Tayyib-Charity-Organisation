@@ -16,8 +16,11 @@
                         {{ __('Dashboard') }}
                     </x-nav-link>
                     @can('viewAny', \App\Models\User::class)
-                        <x-nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.*')">
+                        <x-nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.dashboard')">
                             Administration Dashboard / <span lang="ar" dir="rtl">لوحة الإدارة</span>
+                        </x-nav-link>
+                        <x-nav-link :href="route('admin.users.index')" :active="request()->routeIs('admin.users.*')">
+                            Users / <span lang="ar" dir="rtl">المستخدمون</span>
                         </x-nav-link>
                     @endcan
                 </div>
@@ -76,8 +79,11 @@
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
             @can('viewAny', \App\Models\User::class)
-                <x-responsive-nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.*')">
+                <x-responsive-nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.dashboard')">
                     Administration Dashboard / <span lang="ar" dir="rtl">لوحة الإدارة</span>
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('admin.users.index')" :active="request()->routeIs('admin.users.*')">
+                    Users / <span lang="ar" dir="rtl">المستخدمون</span>
                 </x-responsive-nav-link>
             @endcan
         </div>
