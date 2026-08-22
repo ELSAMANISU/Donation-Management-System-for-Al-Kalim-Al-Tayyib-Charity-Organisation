@@ -54,6 +54,30 @@ class User extends Authenticatable
     }
 
     /**
+     * Determine whether the user has exactly the given role.
+     */
+    public function hasRole(UserRole $role): bool
+    {
+        return $this->role === $role;
+    }
+
+    /**
+     * Determine whether the user has any of the given roles.
+     *
+     * @param  iterable<UserRole>  $roles
+     */
+    public function hasAnyRole(iterable $roles): bool
+    {
+        foreach ($roles as $role) {
+            if ($this->hasRole($role)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Get the administrator who disabled this account.
      */
     public function disabledBy(): BelongsTo
