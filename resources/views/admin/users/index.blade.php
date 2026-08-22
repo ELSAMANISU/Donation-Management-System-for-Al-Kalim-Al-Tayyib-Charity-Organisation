@@ -79,7 +79,18 @@
                             <tbody class="divide-y divide-gray-200 bg-white">
                                 @foreach ($users as $user)
                                     <tr>
-                                        <td class="whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900">{{ $user->name }}</td>
+                                        <td class="whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900">
+                                            @can('view', $user)
+                                                <a href="{{ route('admin.users.show', $user) }}" class="text-indigo-600 hover:text-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                                                    {{ $user->name }}
+                                                </a>
+                                                <span class="mt-1 block text-xs font-normal text-gray-500">
+                                                    View details / <span lang="ar" dir="rtl">عرض التفاصيل</span>
+                                                </span>
+                                            @else
+                                                {{ $user->name }}
+                                            @endcan
+                                        </td>
                                         <td class="whitespace-nowrap px-6 py-4 text-sm text-gray-700">{{ $user->email }}</td>
                                         <td class="whitespace-nowrap px-6 py-4 font-mono text-sm text-gray-700">{{ $user->role->value }}</td>
                                         <td class="whitespace-nowrap px-6 py-4 text-sm">

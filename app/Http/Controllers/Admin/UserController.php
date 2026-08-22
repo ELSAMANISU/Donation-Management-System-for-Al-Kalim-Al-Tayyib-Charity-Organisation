@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\DisableUserRequest;
 use App\Http\Requests\Admin\ReactivateUserRequest;
 use App\Http\Requests\Admin\UserIndexRequest;
+use App\Models\AuditLog;
 use App\Models\User;
 use App\Services\UserAccountStateService;
 use Illuminate\Http\RedirectResponse;
@@ -58,6 +59,47 @@ class UserController extends Controller
             'success',
             'Account disabled successfully. / تم تعطيل الحساب بنجاح.',
         );
+    }
+
+    public function show(User $user): View
+    {
+        Gate::authorize('view', $user);
+
+        $user = User::query()
+            ->select([
+                'id',
+                'name',
+                'email',
+                'role',
+                'is_active',
+                'created_at',
+                'disabled_at',
+                'disabled_reason',
+                'disabled_by',
+            ])
+            ->with('disabledBy:id,name')
+            ->findOrFail($user->getKey());
+
+        $activity = AuditLog::query()
+            ->select([
+                'id',
+                'actor_name',
+                'actor_role',
+                'action',
+                'old_values',
+                'new_values',
+                'created_at',
+            ])
+            ->where('subject_type', $user->getMorphClass())
+            ->where('subject_id', $user->getKey())
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
+            ->paginate(20, pageName: 'activity_page');
+
+        return view('admin.users.show', [
+            'user' => $user,
+            'activity' => $activity,
+        ]);
     }
 
     public function reactivate(ReactivateUserRequest $request, User $user): RedirectResponse
