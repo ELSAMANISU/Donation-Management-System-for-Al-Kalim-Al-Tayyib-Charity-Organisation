@@ -43,6 +43,8 @@ class RegisteredUserController extends Controller
         $user->password = Hash::make($request->password);
         $user->role = UserRole::User;
         $user->is_active = true;
+        $user->must_change_password = false;
+        $user->password_changed_at = null;
         $user->save();
 
         event(new Registered($user));

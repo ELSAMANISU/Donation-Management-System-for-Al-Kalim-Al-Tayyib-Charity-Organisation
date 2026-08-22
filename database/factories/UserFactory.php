@@ -36,6 +36,8 @@ class UserFactory extends Factory
             'disabled_at' => null,
             'disabled_reason' => null,
             'disabled_by' => null,
+            'must_change_password' => false,
+            'password_changed_at' => null,
         ];
     }
 
@@ -79,6 +81,17 @@ class UserFactory extends Factory
             'disabled_at' => now(),
             'disabled_reason' => 'Disabled by factory state.',
             'disabled_by' => null,
+        ]);
+    }
+
+    /**
+     * Indicate that the user must replace their temporary password.
+     */
+    public function mustChangePassword(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'must_change_password' => true,
+            'password_changed_at' => null,
         ]);
     }
 

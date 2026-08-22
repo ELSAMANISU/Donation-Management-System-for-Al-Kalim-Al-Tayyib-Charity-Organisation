@@ -34,6 +34,8 @@ class RegistrationTest extends TestCase
 
         $this->assertSame(UserRole::User, $user->role);
         $this->assertTrue($user->is_active);
+        $this->assertFalse($user->must_change_password);
+        $this->assertNull($user->password_changed_at);
     }
 
     public function test_admin_role_injection_still_creates_a_normal_active_user(): void
@@ -66,6 +68,8 @@ class RegistrationTest extends TestCase
             'disabled_at' => now(),
             'disabled_reason' => 'Injected reason',
             'disabled_by' => $disablingUser->id,
+            'must_change_password' => true,
+            'password_changed_at' => now(),
         ]);
 
         $user = User::where('email', 'state-injection@example.com')->firstOrFail();
@@ -75,5 +79,7 @@ class RegistrationTest extends TestCase
         $this->assertNull($user->disabled_at);
         $this->assertNull($user->disabled_reason);
         $this->assertNull($user->disabled_by);
+        $this->assertFalse($user->must_change_password);
+        $this->assertNull($user->password_changed_at);
     }
 }

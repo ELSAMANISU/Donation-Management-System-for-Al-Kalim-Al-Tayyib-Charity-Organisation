@@ -43,7 +43,7 @@ class AuditLogger
         ?array $newValues = null,
         ?Request $request = null,
     ): AuditLog {
-        if (strlen($action) > 100 || ! preg_match('/\A[a-z][a-z0-9]*(?:\.[a-z][a-z0-9]*)+\z/', $action)) {
+        if (strlen($action) > 100 || ! preg_match('/\A[a-z][a-z0-9]*(?:_[a-z0-9]+)*(?:\.[a-z][a-z0-9]*(?:_[a-z0-9]+)*)+\z/', $action)) {
             throw new InvalidArgumentException('Audit action must be a canonical dot-delimited name.');
         }
 
