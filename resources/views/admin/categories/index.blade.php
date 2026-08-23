@@ -19,6 +19,11 @@
                     Category created successfully. / <span lang="ar" dir="rtl">تم إنشاء الفئة بنجاح.</span>
                 </div>
             @endif
+            @if (session('status') === 'category-updated')
+                <div class="rounded-md bg-green-50 p-4 text-sm font-medium text-green-800" role="status">
+                    Category updated successfully. / <span lang="ar" dir="rtl">تم تحديث الفئة بنجاح.</span>
+                </div>
+            @endif
 
             <section class="overflow-hidden rounded-lg bg-white shadow-sm" aria-labelledby="category-list-heading">
                 <h2 id="category-list-heading" class="sr-only">Category list / قائمة الفئات</h2>
@@ -38,6 +43,7 @@
                                     <th scope="col" class="px-6 py-3 text-start text-xs font-semibold uppercase tracking-wide text-gray-600">Status / <span lang="ar" dir="rtl">الحالة</span></th>
                                     <th scope="col" class="px-6 py-3 text-start text-xs font-semibold uppercase tracking-wide text-gray-600">Display order / <span lang="ar" dir="rtl">ترتيب العرض</span></th>
                                     <th scope="col" class="px-6 py-3 text-start text-xs font-semibold uppercase tracking-wide text-gray-600">Created / <span lang="ar" dir="rtl">تاريخ الإنشاء</span></th>
+                                    <th scope="col" class="px-6 py-3 text-start text-xs font-semibold uppercase tracking-wide text-gray-600">Actions / <span lang="ar" dir="rtl">الإجراءات</span></th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-200 bg-white">
@@ -56,6 +62,13 @@
                                         <td class="whitespace-nowrap px-6 py-4 text-sm text-gray-700">{{ $category->display_order }}</td>
                                         <td class="whitespace-nowrap px-6 py-4 text-sm text-gray-700">
                                             <time datetime="{{ $category->created_at->toAtomString() }}">{{ $category->created_at->format('Y-m-d') }}</time>
+                                        </td>
+                                        <td class="whitespace-nowrap px-6 py-4 text-sm">
+                                            @can('update', $category)
+                                                <a href="{{ route('admin.categories.edit', $category) }}" class="font-medium text-indigo-600 hover:text-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                                                    Edit / <span lang="ar" dir="rtl">تعديل</span>
+                                                </a>
+                                            @endcan
                                         </td>
                                     </tr>
                                 @endforeach

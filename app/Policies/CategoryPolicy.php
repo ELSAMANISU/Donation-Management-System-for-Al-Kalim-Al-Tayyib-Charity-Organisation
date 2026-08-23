@@ -3,6 +3,7 @@
 namespace App\Policies;
 
 use App\Enums\UserRole;
+use App\Models\Category;
 use App\Models\User;
 
 class CategoryPolicy
@@ -15,6 +16,11 @@ class CategoryPolicy
     public function create(User $actor): bool
     {
         return $this->isActiveAdministrator($actor);
+    }
+
+    public function update(User $actor, Category $category): bool
+    {
+        return $this->isActiveAdministrator($actor) && ! $category->trashed();
     }
 
     private function isActiveAdministrator(User $actor): bool

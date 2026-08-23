@@ -28,6 +28,11 @@ Route::middleware(['auth', 'role:admin,super_admin'])->group(function () {
     Route::post('/admin/categories', [CategoryController::class, 'store'])
         ->middleware('throttle:10,1')
         ->name('admin.categories.store');
+    Route::get('/admin/categories/{category}/edit', [CategoryController::class, 'edit'])
+        ->name('admin.categories.edit');
+    Route::patch('/admin/categories/{category}', [CategoryController::class, 'update'])
+        ->middleware('throttle:10,1')
+        ->name('admin.categories.update');
 });
 
 Route::middleware(['auth', 'role:super_admin'])->group(function () {
