@@ -3,12 +3,14 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\RestoreCategoryRequest;
 use App\Http\Requests\Admin\StoreCategoryRequest;
 use App\Http\Requests\Admin\UpdateCategoryImageRequest;
 use App\Http\Requests\Admin\UpdateCategoryRequest;
 use App\Models\Category;
 use App\Services\CategoryCreationService;
 use App\Services\CategoryImageService;
+use App\Services\CategoryLifecycleService;
 use App\Services\CategoryUpdateService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -21,6 +23,7 @@ class CategoryController extends Controller
         private readonly CategoryCreationService $creationService,
         private readonly CategoryUpdateService $updateService,
         private readonly CategoryImageService $imageService,
+        private readonly CategoryLifecycleService $lifecycleService,
     ) {}
 
     public function index(): View
@@ -40,6 +43,19 @@ class CategoryController extends Controller
         Gate::authorize('create', Category::class);
 
         return view('admin.categories.create');
+    }
+
+    public function trashed(): View
+    {
+        Gate::authorize('viewAny', Category::class);
+
+        $categories = Category::onlyTrashed()
+            ->select(['id', 'name_ar', 'name_en', 'slug', 'is_active', 'display_order', 'deleted_at'])
+            ->orderByDesc('deleted_at')
+            ->orderByDesc('id')
+            ->paginate(15);
+
+        return view('admin.categories.trashed', ['categories' => $categories]);
     }
 
     public function store(StoreCategoryRequest $request): RedirectResponse
@@ -110,5 +126,25 @@ class CategoryController extends Controller
         return redirect()
             ->route('admin.categories.edit', $category)
             ->with('status', 'category-image-removed');
+    }
+
+    public function destroy(Request $request, Category $category): RedirectResponse
+    {
+        Gate::authorize('delete', $category);
+
+        $this->lifecycleService->delete($request->user(), $category, $request);
+
+        return redirect()
+            ->route('admin.categories.index')
+            ->with('status', 'category-deleted');
+    }
+
+    public function restore(RestoreCategoryRequest $request, int $category): RedirectResponse
+    {
+        $this->lifecycleService->restore($request->user(), $category, $request);
+
+        return redirect()
+            ->route('admin.categories.index')
+            ->with('status', 'category-restored');
     }
 }

@@ -23,6 +23,16 @@ class CategoryPolicy
         return $this->isActiveAdministrator($actor) && ! $category->trashed();
     }
 
+    public function delete(User $actor, Category $category): bool
+    {
+        return $this->isActiveAdministrator($actor) && ! $category->trashed();
+    }
+
+    public function restore(User $actor, Category $category): bool
+    {
+        return $this->isActiveAdministrator($actor) && $category->trashed();
+    }
+
     private function isActiveAdministrator(User $actor): bool
     {
         return $actor->is_active

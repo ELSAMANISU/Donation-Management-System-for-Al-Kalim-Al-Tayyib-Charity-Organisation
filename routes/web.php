@@ -23,6 +23,8 @@ Route::get('/admin', AdminDashboardController::class)
 Route::middleware(['auth', 'role:admin,super_admin'])->group(function () {
     Route::get('/admin/categories', [CategoryController::class, 'index'])
         ->name('admin.categories.index');
+    Route::get('/admin/categories/trashed', [CategoryController::class, 'trashed'])
+        ->name('admin.categories.trashed');
     Route::get('/admin/categories/create', [CategoryController::class, 'create'])
         ->name('admin.categories.create');
     Route::post('/admin/categories', [CategoryController::class, 'store'])
@@ -39,6 +41,12 @@ Route::middleware(['auth', 'role:admin,super_admin'])->group(function () {
     Route::delete('/admin/categories/{category}/image', [CategoryController::class, 'destroyImage'])
         ->middleware('throttle:10,1')
         ->name('admin.categories.image.destroy');
+    Route::delete('/admin/categories/{category}', [CategoryController::class, 'destroy'])
+        ->middleware('throttle:10,1')
+        ->name('admin.categories.destroy');
+    Route::patch('/admin/categories/{category}/restore', [CategoryController::class, 'restore'])
+        ->middleware('throttle:10,1')
+        ->name('admin.categories.restore');
 });
 
 Route::middleware(['auth', 'role:super_admin'])->group(function () {

@@ -4,11 +4,18 @@
             <h1 class="text-xl font-semibold leading-tight text-gray-800">
                 Categories / <span lang="ar" dir="rtl">الفئات</span>
             </h1>
-            @can('create', \App\Models\Category::class)
-                <a href="{{ route('admin.categories.create') }}" class="inline-flex items-center justify-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
-                    Create Category / <span class="ms-1" lang="ar" dir="rtl">إنشاء فئة</span>
-                </a>
-            @endcan
+            <div class="flex flex-wrap gap-3">
+                @can('viewAny', \App\Models\Category::class)
+                    <a href="{{ route('admin.categories.trashed') }}" class="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                        Deleted Categories / <span class="ms-1" lang="ar" dir="rtl">الفئات المحذوفة</span>
+                    </a>
+                @endcan
+                @can('create', \App\Models\Category::class)
+                    <a href="{{ route('admin.categories.create') }}" class="inline-flex items-center justify-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                        Create Category / <span class="ms-1" lang="ar" dir="rtl">إنشاء فئة</span>
+                    </a>
+                @endcan
+            </div>
         </div>
     </x-slot>
 
@@ -22,6 +29,16 @@
             @if (session('status') === 'category-updated')
                 <div class="rounded-md bg-green-50 p-4 text-sm font-medium text-green-800" role="status">
                     Category updated successfully. / <span lang="ar" dir="rtl">تم تحديث الفئة بنجاح.</span>
+                </div>
+            @endif
+            @if (session('status') === 'category-deleted')
+                <div class="rounded-md bg-green-50 p-4 text-sm font-medium text-green-800" role="status">
+                    Category deleted temporarily and can be restored. / <span lang="ar" dir="rtl">تم حذف الفئة مؤقتاً ويمكن استعادتها.</span>
+                </div>
+            @endif
+            @if (session('status') === 'category-restored')
+                <div class="rounded-md bg-green-50 p-4 text-sm font-medium text-green-800" role="status">
+                    Category restored successfully. / <span lang="ar" dir="rtl">تمت استعادة الفئة بنجاح.</span>
                 </div>
             @endif
 
@@ -76,6 +93,15 @@
                                                 <a href="{{ route('admin.categories.edit', $category) }}" class="font-medium text-indigo-600 hover:text-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
                                                     Edit / <span lang="ar" dir="rtl">تعديل</span>
                                                 </a>
+                                            @endcan
+                                            @can('delete', $category)
+                                                <form method="POST" action="{{ route('admin.categories.destroy', $category) }}" class="mt-2" onsubmit="return confirm('Temporarily delete this category? It can be restored. / حذف هذه الفئة مؤقتاً؟ يمكن استعادتها.')">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="font-medium text-red-600 hover:text-red-800 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
+                                                        Delete / <span lang="ar" dir="rtl">حذف</span>
+                                                    </button>
+                                                </form>
                                             @endcan
                                         </td>
                                     </tr>
