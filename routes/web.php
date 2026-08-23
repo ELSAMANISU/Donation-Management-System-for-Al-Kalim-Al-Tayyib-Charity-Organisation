@@ -33,6 +33,12 @@ Route::middleware(['auth', 'role:admin,super_admin'])->group(function () {
     Route::patch('/admin/categories/{category}', [CategoryController::class, 'update'])
         ->middleware('throttle:10,1')
         ->name('admin.categories.update');
+    Route::patch('/admin/categories/{category}/image', [CategoryController::class, 'updateImage'])
+        ->middleware('throttle:10,1')
+        ->name('admin.categories.image.update');
+    Route::delete('/admin/categories/{category}/image', [CategoryController::class, 'destroyImage'])
+        ->middleware('throttle:10,1')
+        ->name('admin.categories.image.destroy');
 });
 
 Route::middleware(['auth', 'role:super_admin'])->group(function () {

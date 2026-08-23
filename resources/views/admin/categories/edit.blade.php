@@ -6,7 +6,60 @@
     </x-slot>
 
     <div class="py-12">
-        <div class="mx-auto max-w-2xl px-4 sm:px-6 lg:px-8">
+        <div class="mx-auto max-w-2xl space-y-6 px-4 sm:px-6 lg:px-8">
+            @if (session('status') === 'category-image-updated')
+                <div class="rounded-md bg-green-50 p-4 text-sm font-medium text-green-800" role="status">
+                    Category image updated successfully. / <span lang="ar" dir="rtl">تم تحديث صورة الفئة بنجاح.</span>
+                </div>
+            @endif
+            @if (session('status') === 'category-image-removed')
+                <div class="rounded-md bg-green-50 p-4 text-sm font-medium text-green-800" role="status">
+                    Category image removed successfully. / <span lang="ar" dir="rtl">تمت إزالة صورة الفئة بنجاح.</span>
+                </div>
+            @endif
+
+            @can('update', $category)
+                <section class="rounded-lg bg-white p-6 shadow-sm sm:p-8" aria-labelledby="category-image-heading">
+                    <h2 id="category-image-heading" class="text-lg font-semibold text-gray-900">
+                        Public category image / <span lang="ar" dir="rtl">صورة الفئة العامة</span>
+                    </h2>
+
+                    <div class="mt-4">
+                        @if ($category->publicImageUrl())
+                            <img src="{{ $category->publicImageUrl() }}" alt="{{ $category->name_en }} category image" class="h-48 w-full rounded-lg object-cover sm:w-80">
+                        @else
+                            <p class="rounded-md bg-gray-50 p-4 text-sm text-gray-600">No image / <span lang="ar" dir="rtl">لا توجد صورة</span></p>
+                        @endif
+                    </div>
+
+                    <form method="POST" action="{{ route('admin.categories.image.update', $category) }}" enctype="multipart/form-data" class="mt-6 space-y-4">
+                        @csrf
+                        @method('PATCH')
+
+                        <div>
+                            <x-input-label for="image" value="Upload image / رفع صورة" />
+                            <input id="image" name="image" type="file" accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp" aria-describedby="image-help" class="mt-1 block w-full text-sm text-gray-700 file:me-4 file:rounded-md file:border-0 file:bg-indigo-50 file:px-4 file:py-2 file:font-semibold file:text-indigo-700 hover:file:bg-indigo-100" required>
+                            <p id="image-help" class="mt-2 text-sm text-gray-600">JPEG, PNG, or WebP; maximum 5 MiB and 8000×8000 pixels. / <span lang="ar" dir="rtl">JPEG أو PNG أو WebP؛ بحد أقصى 5 ميبيبايت و8000×8000 بكسل.</span></p>
+                            <x-input-error :messages="$errors->get('image')" class="mt-2" />
+                        </div>
+
+                        <x-primary-button>
+                            {{ $category->image_path ? 'Replace Image / استبدال الصورة' : 'Upload Image / رفع الصورة' }}
+                        </x-primary-button>
+                    </form>
+
+                    @if ($category->image_path)
+                        <form method="POST" action="{{ route('admin.categories.image.destroy', $category) }}" class="mt-4" onsubmit="return confirm('Remove this category image? / إزالة صورة هذه الفئة؟')">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="inline-flex items-center rounded-md bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-500 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
+                                Remove Image / <span class="ms-1" lang="ar" dir="rtl">إزالة الصورة</span>
+                            </button>
+                        </form>
+                    @endif
+                </section>
+            @endcan
+
             <section class="rounded-lg bg-white p-6 shadow-sm sm:p-8" aria-labelledby="edit-category-heading">
                 <h2 id="edit-category-heading" class="text-lg font-semibold text-gray-900">
                     Category details / <span lang="ar" dir="rtl">بيانات الفئة</span>

@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class Category extends Model
@@ -40,6 +41,19 @@ class Category extends Model
     public static function normalizeSlug(string $slug): string
     {
         return Str::slug(Str::lower($slug), '-', 'en');
+    }
+
+    public static function isManagedImagePath(?string $path): bool
+    {
+        return is_string($path)
+            && preg_match('/\Acategories\/[A-Za-z0-9_-]+\.(?:jpe?g|png|webp)\z/', $path) === 1;
+    }
+
+    public function publicImageUrl(): ?string
+    {
+        return self::isManagedImagePath($this->image_path)
+            ? Storage::disk('public')->url($this->image_path)
+            : null;
     }
 
     /**

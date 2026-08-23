@@ -37,6 +37,7 @@
                         <table class="min-w-full divide-y divide-gray-200">
                             <thead class="bg-gray-50">
                                 <tr>
+                                    <th scope="col" class="px-6 py-3 text-start text-xs font-semibold uppercase tracking-wide text-gray-600">Image / <span lang="ar" dir="rtl">الصورة</span></th>
                                     <th scope="col" class="px-6 py-3 text-start text-xs font-semibold uppercase tracking-wide text-gray-600">Arabic name / <span lang="ar" dir="rtl">الاسم بالعربية</span></th>
                                     <th scope="col" class="px-6 py-3 text-start text-xs font-semibold uppercase tracking-wide text-gray-600">English name / <span lang="ar" dir="rtl">الاسم بالإنجليزية</span></th>
                                     <th scope="col" class="px-6 py-3 text-start text-xs font-semibold uppercase tracking-wide text-gray-600">Canonical slug / <span lang="ar" dir="rtl">المعرّف المعتمد</span></th>
@@ -49,6 +50,13 @@
                             <tbody class="divide-y divide-gray-200 bg-white">
                                 @foreach ($categories as $category)
                                     <tr>
+                                        <td class="whitespace-nowrap px-6 py-4 text-sm text-gray-700">
+                                            @if ($category->publicImageUrl())
+                                                <img src="{{ $category->publicImageUrl() }}" alt="{{ $category->name_en }} category image" class="h-12 w-16 rounded object-cover">
+                                            @else
+                                                <span class="text-gray-500">No image / <span lang="ar" dir="rtl">لا توجد صورة</span></span>
+                                            @endif
+                                        </td>
                                         <td class="px-6 py-4 text-sm font-medium text-gray-900" lang="ar" dir="rtl">{{ $category->name_ar }}</td>
                                         <td class="px-6 py-4 text-sm font-medium text-gray-900">{{ $category->name_en }}</td>
                                         <td class="px-6 py-4 font-mono text-sm text-gray-700">{{ $category->slug }}</td>

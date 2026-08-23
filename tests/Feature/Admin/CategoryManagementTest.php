@@ -284,7 +284,7 @@ class CategoryManagementTest extends TestCase
                     && $categories->count() === 15
                     && $categories->pluck('id')->take(2)->all() === [$alphaFirst->id, $alphaSecond->id]
                     && array_keys($first->getAttributes()) === [
-                        'id', 'name_ar', 'name_en', 'slug', 'is_active', 'display_order', 'created_at',
+                        'id', 'name_ar', 'name_en', 'slug', 'image_path', 'is_active', 'display_order', 'created_at',
                     ];
             })
             ->assertSee('page=2', false);

@@ -4,11 +4,14 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreCategoryRequest;
+use App\Http\Requests\Admin\UpdateCategoryImageRequest;
 use App\Http\Requests\Admin\UpdateCategoryRequest;
 use App\Models\Category;
 use App\Services\CategoryCreationService;
+use App\Services\CategoryImageService;
 use App\Services\CategoryUpdateService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
@@ -17,6 +20,7 @@ class CategoryController extends Controller
     public function __construct(
         private readonly CategoryCreationService $creationService,
         private readonly CategoryUpdateService $updateService,
+        private readonly CategoryImageService $imageService,
     ) {}
 
     public function index(): View
@@ -24,7 +28,7 @@ class CategoryController extends Controller
         Gate::authorize('viewAny', Category::class);
 
         $categories = Category::query()
-            ->select(['id', 'name_ar', 'name_en', 'slug', 'is_active', 'display_order', 'created_at'])
+            ->select(['id', 'name_ar', 'name_en', 'slug', 'image_path', 'is_active', 'display_order', 'created_at'])
             ->inDisplayOrder()
             ->paginate(15);
 
@@ -79,5 +83,32 @@ class CategoryController extends Controller
         return redirect()
             ->route('admin.categories.index')
             ->with('status', 'category-updated');
+    }
+
+    public function updateImage(UpdateCategoryImageRequest $request, Category $category): RedirectResponse
+    {
+        Gate::authorize('update', $category);
+
+        $this->imageService->upload(
+            actor: $request->user(),
+            category: $category,
+            image: $request->file('image'),
+            request: $request,
+        );
+
+        return redirect()
+            ->route('admin.categories.edit', $category)
+            ->with('status', 'category-image-updated');
+    }
+
+    public function destroyImage(Request $request, Category $category): RedirectResponse
+    {
+        Gate::authorize('update', $category);
+
+        $this->imageService->remove($request->user(), $category, $request);
+
+        return redirect()
+            ->route('admin.categories.edit', $category)
+            ->with('status', 'category-image-removed');
     }
 }
