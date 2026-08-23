@@ -142,7 +142,12 @@ class CategoryDataFoundationTest extends TestCase
         $categoryRoutes = collect(Route::getRoutes()->getRoutes())
             ->filter(fn ($route) => str_contains($route->uri(), 'categor'));
 
-        $this->assertCount(0, $categoryRoutes);
+        $this->assertCount(3, $categoryRoutes);
+        $this->assertTrue($categoryRoutes->every(
+            fn ($route): bool => str_starts_with($route->uri(), 'admin/categories')
+                && in_array('auth', $route->gatherMiddleware(), true)
+                && in_array('role:admin,super_admin', $route->gatherMiddleware(), true)
+        ));
         $this->get('/')
             ->assertOk()
             ->assertDontSee($category->name_en)

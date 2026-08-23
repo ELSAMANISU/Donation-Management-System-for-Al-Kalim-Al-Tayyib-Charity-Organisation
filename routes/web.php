@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\AdministratorController;
+use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\DonationCaseController;
@@ -18,6 +19,16 @@ Route::get('/dashboard', function () {
 Route::get('/admin', AdminDashboardController::class)
     ->middleware(['auth', 'role:admin,super_admin'])
     ->name('admin.dashboard');
+
+Route::middleware(['auth', 'role:admin,super_admin'])->group(function () {
+    Route::get('/admin/categories', [CategoryController::class, 'index'])
+        ->name('admin.categories.index');
+    Route::get('/admin/categories/create', [CategoryController::class, 'create'])
+        ->name('admin.categories.create');
+    Route::post('/admin/categories', [CategoryController::class, 'store'])
+        ->middleware('throttle:10,1')
+        ->name('admin.categories.store');
+});
 
 Route::middleware(['auth', 'role:super_admin'])->group(function () {
     Route::get('/admin/administrators', [AdministratorController::class, 'index'])
