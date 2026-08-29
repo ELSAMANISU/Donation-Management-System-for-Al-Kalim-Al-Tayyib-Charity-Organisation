@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\AdministratorController;
+use App\Http\Controllers\Admin\CampaignController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
@@ -21,6 +22,10 @@ Route::get('/admin', AdminDashboardController::class)
     ->name('admin.dashboard');
 
 Route::middleware(['auth', 'role:admin,super_admin'])->group(function () {
+    Route::get('/admin/campaigns', [CampaignController::class, 'index'])->name('admin.campaigns.index');
+    Route::get('/admin/campaigns/create', [CampaignController::class, 'create'])->name('admin.campaigns.create');
+    Route::post('/admin/campaigns', [CampaignController::class, 'store'])->middleware('throttle:10,1')->name('admin.campaigns.store');
+
     Route::get('/admin/categories', [CategoryController::class, 'index'])
         ->name('admin.categories.index');
     Route::get('/admin/categories/trashed', [CategoryController::class, 'trashed'])

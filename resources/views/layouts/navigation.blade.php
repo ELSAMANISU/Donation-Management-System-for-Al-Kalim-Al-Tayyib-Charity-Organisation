@@ -28,6 +28,11 @@
                             Categories / <span lang="ar" dir="rtl">الفئات</span>
                         </x-nav-link>
                     @endcan
+                    @can('viewAny', \App\Models\Campaign::class)
+                        <x-nav-link :href="route('admin.campaigns.index')" :active="request()->routeIs('admin.campaigns.*')">
+                            Campaigns / <span lang="ar" dir="rtl">الحملات</span>
+                        </x-nav-link>
+                    @endcan
                     @can('manageAdministrators', \App\Models\User::class)
                         <x-nav-link :href="route('admin.administrators.index')" :active="request()->routeIs('admin.administrators.*')">
                             Administrators / <span lang="ar" dir="rtl">المسؤولون</span>
@@ -99,6 +104,11 @@
             @can('viewAny', \App\Models\Category::class)
                 <x-responsive-nav-link :href="route('admin.categories.index')" :active="request()->routeIs('admin.categories.*')">
                     Categories / <span lang="ar" dir="rtl">الفئات</span>
+                </x-responsive-nav-link>
+            @endcan
+            @can('viewAny', \App\Models\Campaign::class)
+                <x-responsive-nav-link :href="route('admin.campaigns.index')" :active="request()->routeIs('admin.campaigns.*')">
+                    Campaigns / <span lang="ar" dir="rtl">الحملات</span>
                 </x-responsive-nav-link>
             @endcan
             @can('manageAdministrators', \App\Models\User::class)
