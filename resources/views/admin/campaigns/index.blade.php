@@ -11,6 +11,8 @@
         @if (session('status') === 'campaign-created')
             <div role="status" class="rounded-md bg-green-50 p-4 text-sm text-green-800">Campaign draft created successfully. It is not published. / <span lang="ar" dir="rtl">تم إنشاء مسودة الحملة بنجاح ولم يتم نشرها.</span></div>
         @endif
+        @if (session('status') === 'campaign-updated')<div role="status" class="rounded-md bg-green-50 p-4 text-sm text-green-800">Campaign draft updated successfully. / <span lang="ar" dir="rtl">تم تحديث مسودة الحملة بنجاح.</span></div>@endif
+        @if (session('status') === 'campaign-unchanged')<div role="status" class="rounded-md bg-blue-50 p-4 text-sm text-blue-800">No changes were made. / <span lang="ar" dir="rtl">لم يتم إجراء أي تغييرات.</span></div>@endif
         <section class="overflow-hidden rounded-lg bg-white shadow-sm" aria-labelledby="campaign-list-heading">
             <h2 id="campaign-list-heading" class="sr-only">Campaign list / قائمة الحملات</h2>
             @if ($campaigns->isEmpty())
@@ -18,7 +20,7 @@
             @else
                 <div class="overflow-x-auto"><table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50"><tr>
-                        <th class="px-6 py-3 text-start">Title / العنوان</th><th class="px-6 py-3 text-start">Category / الفئة</th><th class="px-6 py-3 text-start">Slug / <span lang="ar" dir="rtl">المعرّف</span></th><th class="px-6 py-3 text-start">Status / الحالة</th><th class="px-6 py-3 text-start">Target / الهدف</th><th class="px-6 py-3 text-start">Created / الإنشاء</th>
+                        <th class="px-6 py-3 text-start">Title / العنوان</th><th class="px-6 py-3 text-start">Category / الفئة</th><th class="px-6 py-3 text-start">Slug / <span lang="ar" dir="rtl">المعرّف</span></th><th class="px-6 py-3 text-start">Status / الحالة</th><th class="px-6 py-3 text-start">Target / الهدف</th><th class="px-6 py-3 text-start">Created / الإنشاء</th><th class="px-6 py-3 text-start">Actions / الإجراءات</th>
                     </tr></thead>
                     <tbody class="divide-y divide-gray-200 bg-white">
                     @foreach ($campaigns as $campaign)
@@ -33,7 +35,7 @@
                                 \App\Enums\CampaignStatus::Completed => 'Completed / مكتملة',
                                 \App\Enums\CampaignStatus::Cancelled => 'Cancelled / ملغاة',
                             } }}</td>
-                            <td class="px-6 py-4">{{ $campaign->target_amount }} SDG / ج.س</td><td class="px-6 py-4">{{ $campaign->created_at?->format('Y-m-d') }}</td></tr>
+                            <td class="px-6 py-4">{{ $campaign->target_amount }} SDG / ج.س</td><td class="px-6 py-4">{{ $campaign->created_at?->format('Y-m-d') }}</td><td class="px-6 py-4">@can('update', $campaign)<a class="text-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500" href="{{ route('admin.campaigns.edit', $campaign) }}">Edit / <span lang="ar" dir="rtl">تعديل</span></a>@endcan</td></tr>
                     @endforeach
                     </tbody></table></div>
                 {{ $campaigns->links() }}

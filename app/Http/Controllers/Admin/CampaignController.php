@@ -4,16 +4,18 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreCampaignRequest;
+use App\Http\Requests\Admin\UpdateCampaignRequest;
 use App\Models\Campaign;
 use App\Models\Category;
 use App\Services\CampaignCreationService;
+use App\Services\CampaignUpdateService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
 class CampaignController extends Controller
 {
-    public function __construct(private readonly CampaignCreationService $creationService) {}
+    public function __construct(private readonly CampaignCreationService $creationService, private readonly CampaignUpdateService $updateService) {}
 
     public function index(): View
     {
@@ -42,5 +44,24 @@ class CampaignController extends Controller
         ]), $request);
 
         return redirect()->route('admin.campaigns.index')->with('status', 'campaign-created');
+    }
+
+    public function edit(Campaign $campaign): View
+    {
+        Gate::authorize('update', $campaign);
+        $categories = Category::query()->active()->select(['id', 'name_ar', 'name_en'])->inDisplayOrder()->get();
+        $currentCategory = $campaign->category()->withTrashed()->first();
+
+        return view('admin.campaigns.edit', compact('campaign', 'categories', 'currentCategory'));
+    }
+
+    public function update(UpdateCampaignRequest $request, Campaign $campaign): RedirectResponse
+    {
+        Gate::authorize('update', $campaign);
+        $updated = $this->updateService->update($request->user(), $campaign, $request->safe()->only([
+            'category_id', 'title_ar', 'title_en', 'summary_ar', 'summary_en', 'story_ar', 'story_en', 'target_amount',
+        ]), $request);
+
+        return redirect()->route('admin.campaigns.index')->with('status', $updated->wasChanged() ? 'campaign-updated' : 'campaign-unchanged');
     }
 }
