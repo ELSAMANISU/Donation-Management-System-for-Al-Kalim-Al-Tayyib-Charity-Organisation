@@ -94,4 +94,16 @@ class User extends Authenticatable
     {
         return $this->hasMany(self::class, 'disabled_by');
     }
+
+    /** @return HasMany<Campaign, $this> */
+    public function createdCampaigns(): HasMany
+    {
+        return $this->hasMany(Campaign::class, 'created_by');
+    }
+
+    /** @return HasMany<Campaign, $this> */
+    public function updatedCampaigns(): HasMany
+    {
+        return $this->hasMany(Campaign::class, 'updated_by');
+    }
 }
