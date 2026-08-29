@@ -44,6 +44,12 @@ class Campaign extends Model
         return Str::slug(Str::lower($slug), '-', 'en');
     }
 
+    public static function isManagedImagePath(mixed $path, int $campaignId): bool
+    {
+        return is_string($path)
+            && preg_match('/\Acampaigns\/'.preg_quote((string) $campaignId, '/').'\/[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\.(?:jpg|png|webp)\z/', $path) === 1;
+    }
+
     public function getRouteKeyName(): string
     {
         return 'slug';

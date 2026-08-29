@@ -27,6 +27,9 @@ Route::middleware(['auth', 'role:admin,super_admin'])->group(function () {
     Route::post('/admin/campaigns', [CampaignController::class, 'store'])->middleware('throttle:10,1')->name('admin.campaigns.store');
     Route::get('/admin/campaigns/{campaign}/edit', [CampaignController::class, 'edit'])->name('admin.campaigns.edit');
     Route::patch('/admin/campaigns/{campaign}', [CampaignController::class, 'update'])->middleware('throttle:10,1')->name('admin.campaigns.update');
+    Route::get('/admin/campaigns/{campaign}/image', [CampaignController::class, 'showImage'])->name('admin.campaigns.image.show');
+    Route::post('/admin/campaigns/{campaign}/image', [CampaignController::class, 'storeImage'])->middleware('throttle:10,1')->name('admin.campaigns.image.store');
+    Route::delete('/admin/campaigns/{campaign}/image', [CampaignController::class, 'destroyImage'])->middleware('throttle:10,1')->name('admin.campaigns.image.destroy');
 
     Route::get('/admin/categories', [CategoryController::class, 'index'])
         ->name('admin.categories.index');

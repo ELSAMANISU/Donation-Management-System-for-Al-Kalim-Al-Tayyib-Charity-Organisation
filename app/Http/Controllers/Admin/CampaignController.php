@@ -3,19 +3,27 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\StoreCampaignImageRequest;
 use App\Http\Requests\Admin\StoreCampaignRequest;
 use App\Http\Requests\Admin\UpdateCampaignRequest;
 use App\Models\Campaign;
 use App\Models\Category;
 use App\Services\CampaignCreationService;
+use App\Services\CampaignImageService;
 use App\Services\CampaignUpdateService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
 class CampaignController extends Controller
 {
-    public function __construct(private readonly CampaignCreationService $creationService, private readonly CampaignUpdateService $updateService) {}
+    public function __construct(
+        private readonly CampaignCreationService $creationService,
+        private readonly CampaignUpdateService $updateService,
+        private readonly CampaignImageService $imageService,
+    ) {}
 
     public function index(): View
     {
@@ -63,5 +71,42 @@ class CampaignController extends Controller
         ]), $request);
 
         return redirect()->route('admin.campaigns.index')->with('status', $updated->wasChanged() ? 'campaign-updated' : 'campaign-unchanged');
+    }
+
+    public function showImage(Campaign $campaign): Response
+    {
+        Gate::authorize('update', $campaign);
+        $image = $this->imageService->preview($campaign);
+
+        return response($image['content'], 200, [
+            'Content-Type' => $image['mime'],
+            'Cache-Control' => 'private, no-store, max-age=0',
+            'Pragma' => 'no-cache',
+            'X-Content-Type-Options' => 'nosniff',
+        ]);
+    }
+
+    public function storeImage(StoreCampaignImageRequest $request, Campaign $campaign): RedirectResponse
+    {
+        Gate::authorize('update', $campaign);
+        $this->imageService->upload(
+            $request->user(),
+            $campaign,
+            $request->file('image'),
+            $request->validated('image_alt_ar'),
+            $request->validated('image_alt_en'),
+            $request,
+        );
+
+        return redirect()->route('admin.campaigns.edit', $campaign)->with('status', 'campaign-image-updated');
+    }
+
+    public function destroyImage(Request $request, Campaign $campaign): RedirectResponse
+    {
+        Gate::authorize('update', $campaign);
+        $updated = $this->imageService->remove($request->user(), $campaign, $request);
+
+        return redirect()->route('admin.campaigns.edit', $campaign)
+            ->with('status', $updated->wasChanged() ? 'campaign-image-removed' : 'campaign-image-unchanged');
     }
 }

@@ -38,6 +38,13 @@ return [
             'report' => false,
         ],
 
+        'campaign_images' => [
+            'driver' => 'local',
+            'root' => storage_path('app/private/campaign-images'),
+            'throw' => false,
+            'report' => false,
+        ],
+
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),
