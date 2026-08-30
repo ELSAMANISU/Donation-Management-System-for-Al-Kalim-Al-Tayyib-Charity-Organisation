@@ -72,6 +72,21 @@ Real payment processing, BigQuery, email notifications, and administrator specia
 - Keep application messages, information requests, responses, and files private.
 - Never expose the applicant's identity, contact details, private story, supporting documents, messages, receiving preference, actual receiving details, internal notes, or decision and appeal text publicly.
 
+#### Supporting-document policy
+
+- Accept exactly PDF, JPEG, and PNG supporting documents in the first version. Store JPEG files with the canonical `.jpg` extension; do not accept SVG, WebP, HEIC, GIF, or other image formats.
+- Limit each file to 10 MiB, each Help Application to 10 active documents, and the combined size of its active documents to 50 MiB.
+- Use only server-generated, application-owned paths on a dedicated private disk outside the public web root. Never create a public URL or symbolic link, use an original filename as a storage path, or expose a storage path.
+- Resolve documents through non-sequential references, but never treat knowledge of a reference as authorization. Validate the application, document, and path ownership before every filesystem operation.
+- Encrypt original display filenames. Authorized private interfaces may display a decrypted original filename, but downloads use a generic generated filename and are attachments by default.
+- Immediately before or directly beside the download control for an `accepted_unscanned` document, display this conspicuous bilingual warning: "Security notice: This document passed structural validation but has not been scanned for malware. Download and open it only on a protected, fully updated device. / تنبيه أمني: اجتاز هذا المستند التحقق البنيوي، لكنه لم يُفحص من البرمجيات الخبيثة. قم بتنزيله وفتحه فقط على جهاز محمي ومحدّث بالكامل." Download must require deliberate user action and must never start automatically. The interface must never describe the document as safe, verified clean, virus-free, or malware-free; PDFs remain attachment-only and must not open automatically or render inline.
+- Keep uploads immutable. Replacement creates a new document and removes the old one through an authorized operation. Applicants may remove documents only while the application is `draft`; removal after submission is reserved for a future authorized administrator workflow with a documented reason.
+- Commit logical removal before best-effort post-commit deletion of managed bytes, preserve tombstone metadata for application history, and never read or delete a foreign, traversal, public, or unmanaged path. Leftover bytes do not restore a removed document.
+- Use controlled purposes containing exactly `medical_report`, `cost_estimate`, `tuition_invoice`, `admission_letter`, and `other`. Purpose may be unset in a draft but must be selected before the document is eligible for submission.
+- Represent future document security state with at least `pending`, `accepted_unscanned`, `clean`, and `rejected`. The first version has no antivirus or malware scanner; a structurally validated document accepted under this limitation is `accepted_unscanned`, never `clean` or described as malware-safe.
+- Under the approved first-version policy, an active, present, fully validated `accepted_unscanned` document with a selected purpose may satisfy the minimum supporting-document requirement. This policy must remain replaceable when malware scanning is introduced.
+- A future scanner may move `pending` or `accepted_unscanned` to `clean` after a successful scan or to `rejected` after a failed scan. Historical `accepted_unscanned` documents must never be silently reinterpreted as `clean`.
+
 ### Application review and campaign creation
 
 - Let administrators view all applications and private supporting documents in the first version.
@@ -125,7 +140,7 @@ Real payment processing, BigQuery, email notifications, and administrator specia
 
 1. A signed-in user starts or resumes a draft while having no other open application.
 2. The applicant supplies personal and identity details, a private story, requested amount, preferred general receiving method, consent, and public-identity choice. The applicant does not choose or submit a category and does not provide actual transfer details.
-3. The applicant uploads one or more private supporting documents and submits the application. A draft may temporarily have no documents, but submission requires at least one. The system checks verified identity information for possible duplicate or previous applications and flags possible matches for administrative review.
+3. The applicant uploads one or more private supporting documents and submits the application. A draft may temporarily have no documents, but submission requires at least one active, present, fully validated document with a selected purpose that is eligible under the approved document-security policy. In the first version, this may be an `accepted_unscanned` document and must never be represented as `clean`. The system checks verified identity information for possible duplicate or previous applications and flags possible matches for administrative review.
 4. An administrator reviews the private story and documents, assigns an appropriate active category, and considers any duplicate warning and authorized links to related applications. The administrator may request information, approve the application, or reject it with a documented reason; a duplicate warning never determines the decision automatically.
 5. If information or documents are requested, the application moves to `additional_information_required`. The applicant receives an internal notification and responds privately within the application, including uploading requested documents; the application then returns to `under_review`, and administrators receive an internal notification.
 6. After rejection, the applicant chooses either to appeal the rejected application or to close it and submit a new application. An open appeal and a new open application cannot coexist, and opening the new application makes the previous rejection ineligible for appeal.
@@ -173,7 +188,8 @@ The canonical Sandbox transaction statuses are `initiated`, `pending`, `complete
 - Use MySQL/MariaDB as the operational database and SDG / ج.س as the primary currency.
 - Public campaign content must be prepared separately by an administrator and remain privacy-safe. The applicant's private story is not the campaign's public story, and identity, contact details, documents, messages, receiving preference, actual receiving details, internal notes, and decision or appeal text must never appear publicly.
 - Applicants do not select or submit categories. An authorized administrator assigns an active category after reviewing the private application and documents, and client-supplied category identifiers must never control assignment.
-- Draft applications may temporarily have no supporting documents, but submission requires at least one; all supporting documents remain private and never become campaign files automatically.
+- Draft applications may temporarily have no supporting documents, but submission requires at least one active, present, fully validated document with a selected purpose that is eligible under the approved security policy. Multiple documents are permitted; all remain private and never become campaign files automatically.
+- The first version explicitly accepts structurally validated supporting documents without antivirus or malware scanning and records them as `accepted_unscanned`, never `clean`. This limitation must remain visible and replaceable by future scanning.
 - At application time, collect only a general free-text receiving preference, not bank, account, card, wallet, trusted-person account, or other transfer-destination details. Request and encrypt actual receiving details only after the associated campaign is fully funded.
 - A user can have only one open application at a time. An open appeal and a new open application cannot coexist, and opening a new application ends eligibility to appeal the previous rejected application.
 - On submission, compare verified identity information such as identity or passport number to detect possible duplicate or previous applications. A match creates an administrator-visible warning and authorized links to related applications, but never an automatic rejection; the administrator must document the decision.
@@ -193,8 +209,17 @@ The canonical Sandbox transaction statuses are `initiated`, `pending`, `complete
 
 - Enforce role-based authorization with middleware, Policies, and server-side checks.
 - Use Form Request validation and retain CSRF protection and secure password hashing.
-- Restrict private documents to their owner and authorized administrators; store them outside the public web root.
-- Validate file extension, MIME type, size, and filename.
+- Restrict Help Application documents to their applicant owner and authorized administrators. Store them only on a dedicated private disk outside the public web root, without a public URL or symbolic link, and keep them completely separate from Campaign files and public content.
+- Use non-sequential document references without treating them as authorization. Validate application/document ownership and strict server-generated managed-path ownership before every filesystem operation, and never expose storage paths.
+- Detect MIME type server-side and require exact extension-to-detected-MIME agreement. Do not trust browser-supplied MIME types or filename extensions. Reject malformed, truncated, mismatched, polyglot, or unsupported files wherever detectable.
+- Accept supporting documents only as PDF, JPEG stored canonically as `.jpg`, or PNG, subject to a 10 MiB per-file limit, 10 active documents per application, and 50 MiB combined active size.
+- For JPEG and PNG, require successful decoding, positive dimensions, maximum width and height of 8,000 pixels, and no more than 40,000,000 total decoded pixels. Reject malformed images and decompression-bomb candidates.
+- For PDF, require `.pdf`, server-detected `application/pdf`, a valid PDF signature, and successful structural parsing by an approved parser. Limit documents to 100 pages and reject malformed, encrypted, or password-protected PDFs, embedded files, JavaScript or actions, launch actions, active forms, and other detectable active content. If the required structural safety conditions cannot be established, fail closed. Structural validation does not replace malware scanning.
+- The first version has no antivirus or malware scanner. Record a document that passes all available validation as `accepted_unscanned`; never call or mark it malware-safe or `clean`. Reserve `clean` for a future successful malware scan.
+- Encrypt original filenames and never use them as storage paths. Authorized private interfaces may display them, but downloads use generic generated filenames, default to attachment delivery, do not render arbitrary PDFs inline, and apply private `no-store` caching, `nosniff`, and restrictive response headers.
+- Before an authorized user deliberately downloads an `accepted_unscanned` document, place this conspicuous warning immediately before or directly beside the download control: "Security notice: This document passed structural validation but has not been scanned for malware. Download and open it only on a protected, fully updated device. / تنبيه أمني: اجتاز هذا المستند التحقق البنيوي، لكنه لم يُفحص من البرمجيات الخبيثة. قم بتنزيله وفتحه فقط على جهاز محمي ومحدّث بالكامل." Never start the download automatically or describe the file as safe, verified clean, virus-free, or malware-free. Authorization, application/document ownership checks, dedicated private storage, generic download filenames, private `no-store` caching, `nosniff`, and restrictive response headers remain mandatory; first-version PDFs remain attachment-only and must neither open automatically nor render inline.
+- Never place document bytes, original filenames, paths, hashes, MIME details, purpose, size, or request payloads in audit values.
+- Treat document uploads as immutable. Commit logical removal first, delete only validated managed bytes after commit using best-effort cleanup, preserve tombstone metadata, and never restore removal merely because leftover bytes remain.
 - Store actual receiving details encrypted and restrict them to the private aid-delivery workflow after campaign funding. Never place them in public content or audit payloads; when an authorized interface displays an identifier, show only a masked form.
 - Never store full card numbers, CVV, or real payment details.
 - Rate-limit sensitive actions.
@@ -224,12 +249,16 @@ Administrators must be able to view and download relevant reports as PDF and CSV
 - BigQuery or another operational database in place of MySQL/MariaDB.
 - Email notifications.
 - Administrator specialization or assignment by category. The authorization design must remain extensible so this can be added later.
+- Antivirus and malware scanning for Help Application documents. The first version's explicit `accepted_unscanned` state and compensating controls apply until scanning is introduced; adding a scanner must preserve historical state honestly.
+- Applicant removal of supporting documents after submission. Such removal requires a future authorized administrator workflow with a documented reason.
+- Inline rendering of arbitrary supporting-document PDFs.
 
 ## 10. Acceptance principles
 
 - The first version implements only the approved features above and does not invent additional product scope.
 - All public browsing, donation, application, review, campaign, refund, delivery, administration, and reporting rules behave consistently with their canonical machine-readable statuses, stated permissions, and lifecycles; campaign publication uses `active` with a separate `published_at` value.
-- Sensitive data never appears in public content, private files require authorization, and no real payment credentials are collected or stored.
+- Sensitive data never appears in public content, private files require owner or authorized-administrator access, and no real payment credentials are collected or stored. Help Application evidence remains on a dedicated private disk and never becomes Campaign content or files.
+- The first version explicitly distinguishes structurally validated `accepted_unscanned` evidence from future malware-scanned `clean` evidence. It never claims unscanned files are malware-safe, and its eligibility policy can be replaced when scanning is introduced.
 - Financial totals and lifecycle transitions are transactional, idempotent where required, auditable, and covered by feature tests. Refunds can reactivate an underfunded campaign only before aid delivery; after delivery begins, corrections use separately audited administrative adjustments and delivered aid never exceeds valid raised funds.
 - Rejected applicants must choose between appeal and a closed rejection followed by a new application; the two paths cannot remain open together, and a new application ends the prior appeal option.
 - Duplicate detection based on verified identity information warns administrators and provides authorized related-application links without automatically rejecting an applicant; every decision remains documented and administrative.
