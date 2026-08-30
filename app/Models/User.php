@@ -106,4 +106,10 @@ class User extends Authenticatable
     {
         return $this->hasMany(Campaign::class, 'updated_by');
     }
+
+    /** @return HasMany<HelpApplication, $this> */
+    public function helpApplications(): HasMany
+    {
+        return $this->hasMany(HelpApplication::class, 'applicant_id');
+    }
 }

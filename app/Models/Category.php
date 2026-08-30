@@ -93,6 +93,12 @@ class Category extends Model
         return $this->hasMany(Campaign::class);
     }
 
+    /** @return HasMany<HelpApplication, $this> */
+    public function helpApplications(): HasMany
+    {
+        return $this->hasMany(HelpApplication::class);
+    }
+
     /**
      * @param  Builder<Category>  $query
      */
