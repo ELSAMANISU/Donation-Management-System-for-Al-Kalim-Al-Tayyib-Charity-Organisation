@@ -60,19 +60,23 @@ Real payment processing, BigQuery, email notifications, and administrator specia
 ### Help applications
 
 - Allow a signed-in user to create and save a draft application.
-- Capture personal details, identity or passport information, need category, requested amount, story, supporting documents, preferred receiving method, data-processing consent, and preferred public identity presentation.
-- Support receiving by bank account, electronic wallet, trusted person's account, or another specified method.
-- Store recipient name, provider or bank name, and account or wallet identifier securely; display the identifier only in masked form.
-- Permit requested additional-document uploads and in-application communication between the applicant and administrators.
+- Capture the applicant's full name, email, phone, address, date of birth, identity or passport information, requested amount, private story, preferred general receiving method, data-processing consent, and preferred public identity presentation. Exact validation and encryption are implemented in later scoped increments.
+- Do not ask the applicant to select, submit, or control a category. An authorized administrator assigns an appropriate active category after reviewing the private application and supporting documents; client-supplied category identifiers must never control that assignment.
+- Treat `preferred_receiving_method` as free text describing a general preference, such as bank transfer, cash, electronic wallet or card, a trusted person's account, or another suitable method. The user-facing label is "Preferred way to receive assistance / الطريقة المفضلة لاستلام المساعدة".
+- Do not collect a bank name, account number, card number, wallet identifier, trusted-person account details, or any other actual transfer destination at application time. The preference is not a final transfer instruction.
+- Allow a draft to be saved temporarily without documents, but require at least one supporting document before submission for review. An application may contain multiple supporting documents, such as medical reports and operation estimates, tuition invoices and admission letters, or other evidence appropriate to the need.
+- Keep supporting documents private and visible only to the applicant owner and authorized administrators. Documents never become public campaign files automatically.
+- Permit administrators to request missing information or additional documents. Move the application to `additional_information_required`, notify the applicant internally, and allow a private response and requested-document upload within the application. After the applicant responds, return the application to `under_review` and notify administrators internally.
 - After rejection, require the applicant to choose either to appeal the rejected application or to close it and submit a new application. The applicant cannot have an open appeal and a new open application at the same time, and opening a new application permanently ends the option to appeal the previous rejected application.
 - Detect possible duplicate or previous applications using verified identity information such as identity or passport number. Show reviewing administrators a warning and, when authorized, links to related applications; never reject automatically and require a documented administrator decision.
-- Never expose sensitive personal data or documents publicly.
+- Keep application messages, information requests, responses, and files private.
+- Never expose the applicant's identity, contact details, private story, supporting documents, messages, receiving preference, actual receiving details, internal notes, or decision and appeal text publicly.
 
 ### Application review and campaign creation
 
 - Let administrators view all applications and private supporting documents in the first version.
 - Let administrators request more information, approve an application, or reject it with a reason.
-- After approval, require an administrator to prepare a privacy-safe public story and choose the category, image, target amount, priority, featured state, and whether the campaign remains `draft` or is published as `active`.
+- After approval, require an administrator to prepare separate, approved, privacy-safe public campaign content and choose the category, image, target amount, priority, featured state, and whether the campaign remains `draft` or is published as `active`. The applicant's private story is not the campaign's public story.
 - Publishing changes the campaign to `active`, records `published_at`, and creates the public campaign card in the selected category.
 - Preserve a private link between the campaign and its source application.
 
@@ -86,6 +90,9 @@ Real payment processing, BigQuery, email notifications, and administrator specia
 
 ### Aid delivery
 
+- Only after a campaign reaches 100% and becomes `funded`, allow an administrator to contact the beneficiary within the private system and request the actual receiving details needed for aid delivery.
+- Collect and store actual bank, wallet, cash, trusted-person, or other transfer details encrypted within the aid-delivery workflow. The beneficiary may confirm a method different from the earlier general preference.
+- Never expose actual receiving details publicly, copy them into public campaign content, or include them in audit payloads.
 - Allow aid to be recorded as one payment or multiple instalments.
 - For each delivery, store the amount, date, receiving method, internal transfer reference, private proof document, delivering administrator, and notes.
 - Track total raised, total delivered, and remaining balance.
@@ -98,7 +105,7 @@ Real payment processing, BigQuery, email notifications, and administrator specia
 - Reserve administrator-account management for super administrators.
 - Store Arabic and English category names and descriptions, icon, image, display order, active or hidden state, soft-deletion state, and restoration state.
 - Prevent permanent deletion of a category that has campaigns unless those campaigns are handled safely.
-- Provide internal notifications for new applications, donations, information requests, application status changes, campaign creation and funding, and aid delivery.
+- Provide internal notifications for new application submission, submission confirmation, review started, information or additional-document requests, applicant responses or document uploads, approval or rejection, appeals, campaign conversion or activation, campaign funding, requests for actual receiving details, aid delivery, and completion, as well as relevant donation events.
 - Audit important user and administrator actions.
 - Provide settings for organisation identity, logo, contact details, currency, minimum donation, upload limits, and whether help applications are open.
 
@@ -114,23 +121,25 @@ Real payment processing, BigQuery, email notifications, and administrator specia
 6. Reaching the target changes the campaign to funded and closes it to further donations.
 7. Before aid delivery begins, a simulated refund reverses the completed contribution correctly within a database transaction and returns a `funded` campaign to `active` if its raised amount falls below the target. After aid delivery begins, ordinary refunds are prohibited and any exceptional correction is processed as a separately audited administrative adjustment.
 
-### Beneficiary workflow
+### Applicant and beneficiary workflow
 
 1. A signed-in user starts or resumes a draft while having no other open application.
-2. The user supplies all required information, documents, receiving details, consent, and public-identity choice, then submits the application. The system checks verified identity information for possible duplicate or previous applications and flags possible matches for administrative review.
-3. An administrator reviews it, including any duplicate warning and authorized links to related applications, and may request information, approve it, or reject it with a documented reason. A duplicate warning never determines the decision automatically.
-4. The user may respond and upload requested documents within the application.
-5. After rejection, the user chooses either to appeal the rejected application or to close it and submit a new application. An open appeal and a new open application cannot coexist, and opening the new application makes the previous rejection ineligible for appeal.
-6. An approved application may be converted into a privately linked, privacy-safe campaign and then published.
+2. The applicant supplies personal and identity details, a private story, requested amount, preferred general receiving method, consent, and public-identity choice. The applicant does not choose or submit a category and does not provide actual transfer details.
+3. The applicant uploads one or more private supporting documents and submits the application. A draft may temporarily have no documents, but submission requires at least one. The system checks verified identity information for possible duplicate or previous applications and flags possible matches for administrative review.
+4. An administrator reviews the private story and documents, assigns an appropriate active category, and considers any duplicate warning and authorized links to related applications. The administrator may request information, approve the application, or reject it with a documented reason; a duplicate warning never determines the decision automatically.
+5. If information or documents are requested, the application moves to `additional_information_required`. The applicant receives an internal notification and responds privately within the application, including uploading requested documents; the application then returns to `under_review`, and administrators receive an internal notification.
+6. After rejection, the applicant chooses either to appeal the rejected application or to close it and submit a new application. An open appeal and a new open application cannot coexist, and opening the new application makes the previous rejection ineligible for appeal.
+7. An approved application may be converted into a privately linked campaign. An administrator prepares separate privacy-safe public content using the administrator-assigned category, and the campaign may then be published.
 
 ### Campaign and delivery workflow
 
 1. An administrator prepares a draft campaign from an approved application.
 2. Publishing sets the campaign status to `active`, stores the publication time separately in `published_at`, exposes its database-generated card, and accepts donations until paused, cancelled, or fully funded.
 3. Funding completion changes its status automatically.
-4. An administrator records one or more private, auditable aid deliveries.
-5. After delivery, an administrator publishes a privacy-safe impact update.
-6. The campaign can be completed only after delivery is recorded and the impact update is published.
+4. Only after the campaign is 100% funded, an administrator requests actual receiving details from the beneficiary within the private system. The encrypted details may differ from the earlier general preference and remain excluded from public content and audit payloads.
+5. An administrator records one or more private, auditable aid deliveries.
+6. After delivery, an administrator publishes a privacy-safe impact update.
+7. The campaign can be completed only after delivery is recorded and the impact update is published.
 
 ## 5. Status lifecycles
 
@@ -162,7 +171,10 @@ The canonical Sandbox transaction statuses are `initiated`, `pending`, `complete
 ## 6. Business rules
 
 - Use MySQL/MariaDB as the operational database and SDG / ج.س as the primary currency.
-- Public campaign content must be privacy-safe and separate from private beneficiary information.
+- Public campaign content must be prepared separately by an administrator and remain privacy-safe. The applicant's private story is not the campaign's public story, and identity, contact details, documents, messages, receiving preference, actual receiving details, internal notes, and decision or appeal text must never appear publicly.
+- Applicants do not select or submit categories. An authorized administrator assigns an active category after reviewing the private application and documents, and client-supplied category identifiers must never control assignment.
+- Draft applications may temporarily have no supporting documents, but submission requires at least one; all supporting documents remain private and never become campaign files automatically.
+- At application time, collect only a general free-text receiving preference, not bank, account, card, wallet, trusted-person account, or other transfer-destination details. Request and encrypt actual receiving details only after the associated campaign is fully funded.
 - A user can have only one open application at a time. An open appeal and a new open application cannot coexist, and opening a new application ends eligibility to appeal the previous rejected application.
 - On submission, compare verified identity information such as identity or passport number to detect possible duplicate or previous applications. A match creates an administrator-visible warning and authorized links to related applications, but never an automatic rejection; the administrator must document the decision.
 - Campaigns do not require an expiry date.
@@ -183,7 +195,7 @@ The canonical Sandbox transaction statuses are `initiated`, `pending`, `complete
 - Use Form Request validation and retain CSRF protection and secure password hashing.
 - Restrict private documents to their owner and authorized administrators; store them outside the public web root.
 - Validate file extension, MIME type, size, and filename.
-- Store receiving details securely and show account or wallet identifiers only in masked form.
+- Store actual receiving details encrypted and restrict them to the private aid-delivery workflow after campaign funding. Never place them in public content or audit payloads; when an authorized interface displays an identifier, show only a masked form.
 - Never store full card numbers, CVV, or real payment details.
 - Rate-limit sensitive actions.
 - Use database transactions for financial state changes and idempotency controls for sandbox payments and refunds.
