@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Applicant;
 
+use App\Enums\HelpApplicationDocumentPurpose;
 use App\Enums\HelpApplicationStatus;
 use App\Enums\IdentityDocumentType;
 use App\Enums\PublicIdentityPreference;
@@ -71,6 +72,8 @@ class HelpApplicationController extends Controller
         return view('applicant.help-applications.edit', [
             ...$this->formOptions(),
             'application' => $helpApplication,
+            'documents' => $helpApplication->documents()->active()->inUploadOrder()->get(),
+            'documentPurposes' => HelpApplicationDocumentPurpose::cases(),
         ]);
     }
 

@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Applicant\HelpApplicationController;
+use App\Http\Controllers\Applicant\HelpApplicationDocumentController;
 use App\Http\Controllers\DonationCaseController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
@@ -95,6 +96,8 @@ Route::middleware(['auth', 'role:user'])->prefix('help-applications')->name('hel
     Route::get('/', [HelpApplicationController::class, 'index'])->name('index');
     Route::get('/create', [HelpApplicationController::class, 'create'])->name('create');
     Route::post('/', [HelpApplicationController::class, 'store'])->middleware('throttle:6,1')->name('store');
+    Route::post('/{helpApplication}/documents', [HelpApplicationDocumentController::class, 'store'])->middleware('throttle:6,1')->name('documents.store');
+    Route::delete('/{helpApplication}/documents/{helpApplicationDocument}', [HelpApplicationDocumentController::class, 'destroy'])->middleware('throttle:10,1')->name('documents.destroy');
     Route::get('/{helpApplication}/edit', [HelpApplicationController::class, 'edit'])->name('edit');
     Route::patch('/{helpApplication}', [HelpApplicationController::class, 'update'])->middleware('throttle:10,1')->name('update');
 });

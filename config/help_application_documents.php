@@ -4,6 +4,13 @@ use App\Enums\HelpApplicationDocumentSecurityStatus;
 
 return [
     'disk' => 'help_application_documents',
+    'qpdf' => [
+        'binary' => env('QPDF_BINARY'),
+        'version' => '12.4.1',
+        'timeout_seconds' => 10,
+        'max_output_bytes' => 8388608,
+        'supported_json_versions' => [2],
+    ],
     'limits' => [
         'max_file_bytes' => 10485760,
         'max_active_documents' => 10,

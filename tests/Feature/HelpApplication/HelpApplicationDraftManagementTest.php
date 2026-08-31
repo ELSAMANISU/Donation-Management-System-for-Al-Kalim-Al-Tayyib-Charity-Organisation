@@ -43,9 +43,11 @@ class HelpApplicationDraftManagementTest extends TestCase
         }
 
         $routes = collect(app('router')->getRoutes())->filter(fn ($route) => str_starts_with((string) $route->getName(), 'help-applications.'));
-        $this->assertSame(5, $routes->count());
+        $this->assertSame(7, $routes->count());
         $this->assertContains('throttle:6,1', $routes->firstWhere('action.as', 'help-applications.store')->gatherMiddleware());
         $this->assertContains('throttle:10,1', $routes->firstWhere('action.as', 'help-applications.update')->gatherMiddleware());
+        $this->assertContains('throttle:6,1', $routes->firstWhere('action.as', 'help-applications.documents.store')->gatherMiddleware());
+        $this->assertContains('throttle:10,1', $routes->firstWhere('action.as', 'help-applications.documents.destroy')->gatherMiddleware());
         $this->assertContains('role:user', $routes->firstWhere('action.as', 'help-applications.index')->gatherMiddleware());
 
         $user = User::factory()->create();

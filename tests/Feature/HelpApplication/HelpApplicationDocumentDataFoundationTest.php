@@ -308,9 +308,12 @@ class HelpApplicationDocumentDataFoundationTest extends TestCase
         }
     }
 
-    public function test_no_document_http_surface_or_campaign_coupling_exists(): void
+    public function test_document_http_surface_is_upload_and_removal_only_without_campaign_coupling(): void
     {
-        $this->assertFalse(collect(Route::getRoutes())->contains(fn ($route): bool => str_contains(strtolower($route->uri().' '.(string) $route->getName().' '.$route->getActionName()), 'document')));
+        $routes = collect(Route::getRoutes())->filter(fn ($route): bool => str_contains((string) $route->getName(), 'help-applications.documents.'));
+        $this->assertSame(['help-applications.documents.destroy', 'help-applications.documents.store'], $routes->pluck('action.as')->sort()->values()->all());
+        $this->assertSame([['DELETE'], ['POST']], $routes->map(fn ($route) => array_values(array_diff($route->methods(), ['HEAD'])))->sort()->values()->all());
+        $this->assertFalse(collect(Route::getRoutes())->contains(fn ($route): bool => preg_match('/document.*(download|preview|show)/i', strtolower($route->uri().' '.(string) $route->getName().' '.$route->getActionName())) === 1));
         $this->assertFalse(Schema::hasColumn('campaigns', 'help_application_document_id'));
     }
 
