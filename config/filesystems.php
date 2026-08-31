@@ -45,6 +45,14 @@ return [
             'report' => false,
         ],
 
+        'help_application_documents' => [
+            'driver' => 'local',
+            'root' => storage_path('app/private/help-application-documents'),
+            'visibility' => 'private',
+            'throw' => true,
+            'report' => false,
+        ],
+
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),
