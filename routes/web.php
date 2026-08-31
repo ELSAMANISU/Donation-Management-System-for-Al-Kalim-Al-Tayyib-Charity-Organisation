@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\CampaignController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
+use App\Http\Controllers\Applicant\HelpApplicationController;
 use App\Http\Controllers\DonationCaseController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
@@ -88,6 +89,14 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
+
+Route::middleware(['auth', 'role:user'])->prefix('help-applications')->name('help-applications.')->group(function () {
+    Route::get('/', [HelpApplicationController::class, 'index'])->name('index');
+    Route::get('/create', [HelpApplicationController::class, 'create'])->name('create');
+    Route::post('/', [HelpApplicationController::class, 'store'])->middleware('throttle:6,1')->name('store');
+    Route::get('/{helpApplication}/edit', [HelpApplicationController::class, 'edit'])->name('edit');
+    Route::patch('/{helpApplication}', [HelpApplicationController::class, 'update'])->middleware('throttle:10,1')->name('update');
 });
 
 Route::get('/{locale}/cases', [DonationCaseController::class, 'index'])->name('cases.index');

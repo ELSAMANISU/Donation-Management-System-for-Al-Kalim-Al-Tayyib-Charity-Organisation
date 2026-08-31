@@ -14,7 +14,6 @@ use Illuminate\Database\Eloquent\MassAssignmentException;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use ReflectionClass;
@@ -41,20 +40,6 @@ class HelpApplicationDataFoundationTest extends TestCase
         $this->assertFalse(Schema::hasColumn('campaigns', 'help_application_id'));
         $this->assertFalse(method_exists(Campaign::class, 'helpApplication'));
         $this->assertFalse(method_exists(HelpApplication::class, 'campaign'));
-        $this->assertFalse(collect(Route::getRoutes())->contains(function ($route): bool {
-            $uri = strtolower($route->uri());
-            $name = strtolower((string) $route->getName());
-            $action = strtolower($route->getActionName());
-
-            return collect([
-                'help-application', 'help_applications', 'help/applications', 'help-applications',
-            ])->contains(fn (string $variant): bool => str_contains($uri, $variant))
-                || collect([
-                    'help.application', 'help_application', 'help-application', 'help-applications',
-                ])->contains(fn (string $variant): bool => str_contains($name, $variant))
-                || str_contains($action, 'helpapplication')
-                || str_contains($action, 'help_application');
-        }));
     }
 
     public function test_sqlite_schema_has_expected_named_indexes_and_foreign_keys(): void

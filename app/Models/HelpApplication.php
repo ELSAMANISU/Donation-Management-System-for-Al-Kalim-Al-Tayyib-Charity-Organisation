@@ -71,6 +71,11 @@ class HelpApplication extends Model
         ];
     }
 
+    public function getRouteKeyName(): string
+    {
+        return 'reference';
+    }
+
     /** @return Attribute<string|null, string|null> */
     protected function identityIssuingCountry(): Attribute
     {

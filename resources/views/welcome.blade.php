@@ -1135,12 +1135,14 @@
         <span data-en="My Donations" data-ar="تبرعاتي">My Donations</span>
       </a>
     </li>
+    @can('viewAny', \App\Models\HelpApplication::class)
     <li>
-      <a href="#">
+      <a href="{{ route('help-applications.index') }}">
         <i class="fas fa-paper-plane"></i>
-        <span data-en="Submit a Request" data-ar="تقديم طلب">Submit a Request</span>
+        <span data-en="My Help Application" data-ar="طلب المساعدة الخاص بي">My Help Application</span>
       </a>
     </li>
+    @endcan
     <li>
       <a href="{{ route('profile.edit') }}">
         <i class="fas fa-user-circle"></i>

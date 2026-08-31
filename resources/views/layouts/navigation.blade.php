@@ -15,6 +15,11 @@
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
+                    @can('viewAny', \App\Models\HelpApplication::class)
+                        <x-nav-link :href="route('help-applications.index')" :active="request()->routeIs('help-applications.*')">
+                            My Help Application / <span lang="ar" dir="rtl">طلب المساعدة الخاص بي</span>
+                        </x-nav-link>
+                    @endcan
                     @can('viewAny', \App\Models\User::class)
                         <x-nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.dashboard')">
                             Administration Dashboard / <span lang="ar" dir="rtl">لوحة الإدارة</span>
@@ -57,6 +62,11 @@
                     </x-slot>
 
                     <x-slot name="content">
+                        @can('viewAny', \App\Models\HelpApplication::class)
+                            <x-dropdown-link :href="route('help-applications.index')">
+                                My Help Application / <span lang="ar" dir="rtl">طلب المساعدة الخاص بي</span>
+                            </x-dropdown-link>
+                        @endcan
                         <x-dropdown-link :href="route('profile.edit')">
                             {{ __('Profile') }}
                         </x-dropdown-link>
@@ -93,6 +103,11 @@
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
+            @can('viewAny', \App\Models\HelpApplication::class)
+                <x-responsive-nav-link :href="route('help-applications.index')" :active="request()->routeIs('help-applications.*')">
+                    My Help Application / <span lang="ar" dir="rtl">طلب المساعدة الخاص بي</span>
+                </x-responsive-nav-link>
+            @endcan
             @can('viewAny', \App\Models\User::class)
                 <x-responsive-nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.dashboard')">
                     Administration Dashboard / <span lang="ar" dir="rtl">لوحة الإدارة</span>
@@ -126,6 +141,11 @@
             </div>
 
             <div class="mt-3 space-y-1">
+                @can('viewAny', \App\Models\HelpApplication::class)
+                    <x-responsive-nav-link :href="route('help-applications.index')">
+                        My Help Application / <span lang="ar" dir="rtl">طلب المساعدة الخاص بي</span>
+                    </x-responsive-nav-link>
+                @endcan
                 <x-responsive-nav-link :href="route('profile.edit')">
                     {{ __('Profile') }}
                 </x-responsive-nav-link>
