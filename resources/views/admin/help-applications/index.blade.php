@@ -1,6 +1,11 @@
 <x-app-layout>
     <x-slot name="header"><h1 class="text-xl font-semibold text-gray-800">Pending Help Applications / <span lang="ar" dir="rtl">طلبات المساعدة قيد الانتظار</span></h1></x-slot>
     <div class="py-12"><div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8"><div class="overflow-hidden rounded-lg bg-white shadow-sm">
+        @if (session('status') === 'help-application-review-started')
+            <div role="status" class="bg-green-50 p-4 text-sm text-green-800">Review started successfully. / <span lang="ar" dir="rtl">بدأت مراجعة الطلب بنجاح.</span></div>
+        @elseif (session('status') === 'help-application-review-already-started')
+            <div role="status" class="bg-blue-50 p-4 text-sm text-blue-800">Review already started. / <span lang="ar" dir="rtl">بدأت مراجعة الطلب بالفعل.</span></div>
+        @endif
         @if ($applications->isEmpty())
             <p class="p-6 text-gray-700">No pending help applications. / <span lang="ar" dir="rtl">لا توجد طلبات مساعدة قيد الانتظار.</span></p>
         @else

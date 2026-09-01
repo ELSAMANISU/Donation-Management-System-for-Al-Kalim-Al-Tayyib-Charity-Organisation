@@ -48,6 +48,12 @@ class HelpApplicationPolicy
             && $application->status === HelpApplicationStatus::Pending;
     }
 
+    public function startReview(User $actor, HelpApplication $application): bool
+    {
+        return $this->isEligibleAdministrator($actor)
+            && in_array($application->status, [HelpApplicationStatus::Pending, HelpApplicationStatus::UnderReview], true);
+    }
+
     private function isEligibleApplicant(User $actor): bool
     {
         return $actor->is_active

@@ -4,9 +4,12 @@ namespace App\Http\Controllers\Admin;
 
 use App\Enums\HelpApplicationStatus;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\StartHelpApplicationReviewRequest;
 use App\Models\HelpApplication;
 use App\Models\HelpApplicationDocument;
 use App\Models\HelpApplicationDuplicateWarning;
+use App\Services\HelpApplicationReviewService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Gate;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -16,6 +19,8 @@ class HelpApplicationController extends Controller
         'Cache-Control' => 'no-store, private',
         'Pragma' => 'no-cache',
     ];
+
+    public function __construct(private readonly HelpApplicationReviewService $reviewService) {}
 
     public function index(): Response
     {
@@ -70,5 +75,14 @@ class HelpApplicationController extends Controller
             200,
             self::PRIVATE_HEADERS,
         );
+    }
+
+    public function startReview(StartHelpApplicationReviewRequest $request, string $helpApplication): RedirectResponse
+    {
+        $result = $this->reviewService->start($request->user(), $helpApplication);
+
+        return redirect()->route('admin.help-applications.index')
+            ->with('status', $result->changed ? 'help-application-review-started' : 'help-application-review-already-started')
+            ->withHeaders(self::PRIVATE_HEADERS);
     }
 }

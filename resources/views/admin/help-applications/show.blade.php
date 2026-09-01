@@ -7,6 +7,10 @@
         $securityStatuses = ['pending' => ['Processing', 'قيد المعالجة'], 'accepted_unscanned' => ['Structurally accepted; not malware-scanned', 'مقبول بنيويًا؛ لم يُفحص من البرمجيات الخبيثة'], 'clean' => ['Malware scan completed', 'اكتمل فحص البرمجيات الخبيثة'], 'rejected' => ['Not accepted', 'غير مقبول']];
     @endphp
     <div class="py-12"><div class="mx-auto max-w-5xl space-y-6 px-4 sm:px-6 lg:px-8">
+        <form method="POST" action="{{ route('admin.help-applications.start-review', $application->reference) }}">
+            @csrf
+            <button type="submit" class="rounded-md bg-indigo-600 px-4 py-2 font-semibold text-white hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">Start review / <span lang="ar" dir="rtl">بدء المراجعة</span></button>
+        </form>
         <a href="{{ route('admin.help-applications.index') }}" class="text-indigo-600 hover:text-indigo-800">← Pending applications / <span lang="ar" dir="rtl">الطلبات قيد الانتظار</span></a>
         <section class="rounded-lg bg-white p-6 shadow-sm" aria-labelledby="application-status"><h2 id="application-status" class="text-lg font-semibold">Application status / <span lang="ar" dir="rtl">حالة الطلب</span></h2><dl class="mt-4 grid gap-4 sm:grid-cols-2">
             <div><dt class="text-sm font-medium text-gray-500">Reference / <span lang="ar" dir="rtl">المرجع</span></dt><dd class="mt-1 break-all font-mono">{{ $application->reference }}</dd></div>

@@ -30,6 +30,10 @@ Route::middleware(['auth', 'role:admin,super_admin'])->group(function () {
     Route::get('/admin/help-applications/{helpApplication}', [AdminHelpApplicationController::class, 'show'])
         ->whereUuid('helpApplication')
         ->name('admin.help-applications.show');
+    Route::post('/admin/help-applications/{helpApplication}/start-review', [AdminHelpApplicationController::class, 'startReview'])
+        ->whereUuid('helpApplication')
+        ->middleware('throttle:10,1')
+        ->name('admin.help-applications.start-review');
 
     Route::get('/admin/campaigns', [CampaignController::class, 'index'])->name('admin.campaigns.index');
     Route::get('/admin/campaigns/create', [CampaignController::class, 'create'])->name('admin.campaigns.create');

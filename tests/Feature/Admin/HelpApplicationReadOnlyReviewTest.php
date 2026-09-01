@@ -18,15 +18,15 @@ class HelpApplicationReadOnlyReviewTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_routes_are_exact_get_only_uuid_admin_surfaces(): void
+    public function test_routes_preserve_exact_read_only_surfaces_and_one_bounded_mutation(): void
     {
         $routes = collect(app('router')->getRoutes())->filter(
             fn ($route) => str_starts_with((string) $route->getName(), 'admin.help-applications.'),
         );
 
-        $this->assertCount(2, $routes);
-        $this->assertSame(['admin.help-applications.index', 'admin.help-applications.show'], $routes->pluck('action.as')->sort()->values()->all());
-        foreach ($routes as $route) {
+        $this->assertCount(3, $routes);
+        $this->assertSame(['admin.help-applications.index', 'admin.help-applications.show', 'admin.help-applications.start-review'], $routes->pluck('action.as')->sort()->values()->all());
+        foreach ($routes->whereIn('action.as', ['admin.help-applications.index', 'admin.help-applications.show']) as $route) {
             $this->assertSame(['GET', 'HEAD'], $route->methods());
             $this->assertContains('web', $route->gatherMiddleware());
             $this->assertContains('auth', $route->gatherMiddleware());
@@ -45,8 +45,10 @@ class HelpApplicationReadOnlyReviewTest extends TestCase
         $publicWildcardPosition = $allRoutes->search(fn ($route) => $route->uri() === '{locale}/cases/{id}');
         $this->assertLessThan($publicWildcardPosition, $allRoutes->search(fn ($route) => $route->getName() === 'admin.help-applications.index'));
         $this->assertLessThan($publicWildcardPosition, $allRoutes->search(fn ($route) => $route->getName() === 'admin.help-applications.show'));
-        $this->assertEmpty($allRoutes->filter(fn ($route) => str_starts_with($route->uri(), 'admin/help-applications')
-            && array_intersect($route->methods(), ['POST', 'PUT', 'PATCH', 'DELETE'])));
+        $mutations = $allRoutes->filter(fn ($route) => str_starts_with($route->uri(), 'admin/help-applications')
+            && array_intersect($route->methods(), ['POST', 'PUT', 'PATCH', 'DELETE']));
+        $this->assertCount(1, $mutations);
+        $this->assertSame('admin.help-applications.start-review', $mutations->first()->getName());
         $this->assertEmpty($allRoutes->filter(fn ($route) => str_starts_with($route->uri(), 'admin/help-applications')
             && preg_match('/document|download|preview/i', $route->uri())));
     }
