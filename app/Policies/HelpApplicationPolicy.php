@@ -32,6 +32,11 @@ class HelpApplicationPolicy
             && $application->open_slot === true;
     }
 
+    public function submit(User $actor, HelpApplication $application): bool
+    {
+        return $this->view($actor, $application);
+    }
+
     private function isEligibleApplicant(User $actor): bool
     {
         return $actor->is_active

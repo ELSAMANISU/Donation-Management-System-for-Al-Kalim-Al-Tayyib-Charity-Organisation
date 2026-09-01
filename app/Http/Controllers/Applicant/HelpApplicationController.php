@@ -9,9 +9,11 @@ use App\Enums\PublicIdentityPreference;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Applicant\HelpApplicationDraftRequest;
 use App\Http\Requests\Applicant\StoreHelpApplicationDraftRequest;
+use App\Http\Requests\Applicant\SubmitHelpApplicationRequest;
 use App\Http\Requests\Applicant\UpdateHelpApplicationDraftRequest;
 use App\Models\HelpApplication;
 use App\Services\HelpApplicationDraftService;
+use App\Services\HelpApplicationSubmissionService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -19,7 +21,10 @@ use Illuminate\View\View;
 
 class HelpApplicationController extends Controller
 {
-    public function __construct(private readonly HelpApplicationDraftService $draftService) {}
+    public function __construct(
+        private readonly HelpApplicationDraftService $draftService,
+        private readonly HelpApplicationSubmissionService $submissionService,
+    ) {}
 
     public function index(Request $request): View
     {
@@ -90,6 +95,18 @@ class HelpApplicationController extends Controller
 
         return redirect()->route('help-applications.edit', $result->application)
             ->with('status', $result->changed ? 'help-application-draft-updated' : 'help-application-draft-unchanged');
+    }
+
+    public function submit(SubmitHelpApplicationRequest $request, HelpApplication $helpApplication): RedirectResponse
+    {
+        $consentAccepted = $request->validated('consent') === '1';
+        $request->replace([]);
+        $submitted = $this->submissionService->submit($request->user(), $helpApplication, $consentAccepted, $request);
+
+        return redirect()->route('help-applications.index')->with(
+            'status',
+            $submitted ? 'help-application-submitted' : 'help-application-already-submitted',
+        );
     }
 
     private function formOptions(): array

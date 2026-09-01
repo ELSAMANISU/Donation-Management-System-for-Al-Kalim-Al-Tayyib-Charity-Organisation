@@ -12,6 +12,12 @@
                     <div role="status" class="mt-4 rounded-md bg-amber-50 p-4 text-sm text-amber-900">This application is no longer an editable draft. / <span lang="ar" dir="rtl">لم يعد هذا الطلب مسودة قابلة للتعديل.</span></div>
                 @endif
 
+                @if (session('status') === 'help-application-submitted')
+                    <div role="status" class="mt-4 rounded-md bg-green-50 p-4 text-sm text-green-800">Your Help Application was submitted for review. / <span lang="ar" dir="rtl">تم إرسال طلب المساعدة للمراجعة.</span></div>
+                @elseif (session('status') === 'help-application-already-submitted')
+                    <div role="status" class="mt-4 rounded-md bg-blue-50 p-4 text-sm text-blue-800">This Help Application has already been submitted. / <span lang="ar" dir="rtl">تم إرسال طلب المساعدة هذا بالفعل.</span></div>
+                @endif
+
                 @if ($application === null)
                     <p class="mt-4 text-gray-700">You have no open Help Application. You may start a private draft and return to it later. Saving a draft does not send it for review. / <span lang="ar" dir="rtl">ليس لديك طلب مساعدة مفتوح. يمكنك بدء مسودة خاصة والعودة إليها لاحقاً. حفظ المسودة لا يرسلها للمراجعة.</span></p>
                     <a href="{{ route('help-applications.create') }}" class="mt-6 inline-flex rounded-md bg-indigo-600 px-4 py-2 font-semibold text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">Start Help Application / <span lang="ar" dir="rtl">بدء طلب مساعدة</span></a>
