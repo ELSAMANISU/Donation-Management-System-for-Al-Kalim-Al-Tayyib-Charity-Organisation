@@ -28,6 +28,11 @@
                             Users / <span lang="ar" dir="rtl">المستخدمون</span>
                         </x-nav-link>
                     @endcan
+                    @can('reviewPendingAny', \App\Models\HelpApplication::class)
+                        <x-nav-link :href="route('admin.help-applications.index')" :active="request()->routeIs('admin.help-applications.*')">
+                            Help Applications / <span lang="ar" dir="rtl">طلبات المساعدة</span>
+                        </x-nav-link>
+                    @endcan
                     @can('viewAny', \App\Models\Category::class)
                         <x-nav-link :href="route('admin.categories.index')" :active="request()->routeIs('admin.categories.*')">
                             Categories / <span lang="ar" dir="rtl">الفئات</span>
@@ -114,6 +119,11 @@
                 </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('admin.users.index')" :active="request()->routeIs('admin.users.*')">
                     Users / <span lang="ar" dir="rtl">المستخدمون</span>
+                </x-responsive-nav-link>
+            @endcan
+            @can('reviewPendingAny', \App\Models\HelpApplication::class)
+                <x-responsive-nav-link :href="route('admin.help-applications.index')" :active="request()->routeIs('admin.help-applications.*')">
+                    Help Applications / <span lang="ar" dir="rtl">طلبات المساعدة</span>
                 </x-responsive-nav-link>
             @endcan
             @can('viewAny', \App\Models\Category::class)

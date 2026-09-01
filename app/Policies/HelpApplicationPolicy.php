@@ -37,10 +37,28 @@ class HelpApplicationPolicy
         return $this->view($actor, $application);
     }
 
+    public function reviewPendingAny(User $actor): bool
+    {
+        return $this->isEligibleAdministrator($actor);
+    }
+
+    public function reviewPending(User $actor, HelpApplication $application): bool
+    {
+        return $this->isEligibleAdministrator($actor)
+            && $application->status === HelpApplicationStatus::Pending;
+    }
+
     private function isEligibleApplicant(User $actor): bool
     {
         return $actor->is_active
             && ! $actor->must_change_password
             && $actor->hasRole(UserRole::User);
+    }
+
+    private function isEligibleAdministrator(User $actor): bool
+    {
+        return $actor->is_active
+            && ! $actor->must_change_password
+            && $actor->hasAnyRole([UserRole::Admin, UserRole::SuperAdmin]);
     }
 }
