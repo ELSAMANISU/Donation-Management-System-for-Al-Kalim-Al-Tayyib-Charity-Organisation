@@ -112,4 +112,10 @@ class User extends Authenticatable
     {
         return $this->hasMany(HelpApplication::class, 'applicant_id');
     }
+
+    /** @return HasMany<InternalNotification, $this> */
+    public function internalNotifications(): HasMany
+    {
+        return $this->hasMany(InternalNotification::class, 'recipient_id');
+    }
 }

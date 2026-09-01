@@ -119,6 +119,21 @@ class HelpApplication extends Model
         return $this->hasMany(HelpApplicationDocument::class);
     }
 
+    public function internalNotificationEvents(): HasMany
+    {
+        return $this->hasMany(InternalNotificationEvent::class);
+    }
+
+    public function duplicateWarningsRaised(): HasMany
+    {
+        return $this->hasMany(HelpApplicationDuplicateWarning::class, 'submitted_application_id');
+    }
+
+    public function duplicateWarningsMatched(): HasMany
+    {
+        return $this->hasMany(HelpApplicationDuplicateWarning::class, 'matched_application_id');
+    }
+
     /** @param Builder<HelpApplication> $query */
     public function scopeOpen(Builder $query): void
     {

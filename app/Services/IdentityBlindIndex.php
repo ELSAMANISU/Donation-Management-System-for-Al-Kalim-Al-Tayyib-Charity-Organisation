@@ -36,16 +36,62 @@ class IdentityBlindIndex
     {
         $version = config('identity.blind_index.current_version');
 
-        if (! is_int($version) && ! (is_string($version) && preg_match('/\A[1-9][0-9]*\z/', $version) === 1)) {
+        if (is_string($version) && preg_match('/\A[1-9][0-9]*\z/', $version) === 1) {
+            $version = filter_var($version, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1, 'max_range' => 65535]]);
+        }
+
+        if (! is_int($version) || $version < 1 || $version > 65535) {
             throw $this->configurationException();
         }
 
-        return (int) $version;
+        return $version;
     }
 
     public function normalizationVersion(): int
     {
         return self::NORMALIZATION_VERSION;
+    }
+
+    /** @return list<int> */
+    public function configuredKeyVersions(): array
+    {
+        $configured = config('identity.blind_index.keys');
+
+        if (! is_array($configured) || $configured === []) {
+            throw $this->configurationException();
+        }
+
+        $versions = [];
+
+        foreach ($configured as $rawVersion => $encoded) {
+            if (is_int($rawVersion)) {
+                $version = $rawVersion;
+            } elseif (is_string($rawVersion) && preg_match('/\A[1-9][0-9]*\z/', $rawVersion) === 1) {
+                $version = (int) $rawVersion;
+            } else {
+                throw $this->configurationException();
+            }
+
+            if ($version < 1 || $version > 65535 || isset($versions[$version]) || ! is_string($encoded) || $encoded === '') {
+                throw $this->configurationException();
+            }
+
+            $secret = base64_decode($encoded, true);
+
+            if ($secret === false || strlen($secret) < 32) {
+                throw $this->configurationException();
+            }
+
+            $versions[$version] = $version;
+        }
+
+        if (! isset($versions[$this->currentKeyVersion()])) {
+            throw $this->configurationException();
+        }
+
+        ksort($versions, SORT_NUMERIC);
+
+        return array_values($versions);
     }
 
     public function normalizeIdentifier(string $identifier): string
