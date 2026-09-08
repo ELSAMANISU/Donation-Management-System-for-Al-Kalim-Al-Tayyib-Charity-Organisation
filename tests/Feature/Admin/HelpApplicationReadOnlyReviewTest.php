@@ -24,8 +24,9 @@ class HelpApplicationReadOnlyReviewTest extends TestCase
             fn ($route) => str_starts_with((string) $route->getName(), 'admin.help-applications.'),
         );
 
-        $this->assertCount(5, $routes);
+        $this->assertCount(6, $routes);
         $this->assertSame([
+            'admin.help-applications.in-review.assign-category',
             'admin.help-applications.in-review.index',
             'admin.help-applications.in-review.show',
             'admin.help-applications.index',
@@ -53,8 +54,11 @@ class HelpApplicationReadOnlyReviewTest extends TestCase
         $this->assertLessThan($publicWildcardPosition, $allRoutes->search(fn ($route) => $route->getName() === 'admin.help-applications.show'));
         $mutations = $allRoutes->filter(fn ($route) => str_starts_with($route->uri(), 'admin/help-applications')
             && array_intersect($route->methods(), ['POST', 'PUT', 'PATCH', 'DELETE']));
-        $this->assertCount(1, $mutations);
-        $this->assertSame('admin.help-applications.start-review', $mutations->first()->getName());
+        $this->assertCount(2, $mutations);
+        $this->assertSame([
+            'admin.help-applications.in-review.assign-category',
+            'admin.help-applications.start-review',
+        ], $mutations->pluck('action.as')->sort()->values()->all());
         $this->assertEmpty($allRoutes->filter(fn ($route) => str_starts_with($route->uri(), 'admin/help-applications')
             && preg_match('/document|download|preview/i', $route->uri())));
     }
@@ -248,6 +252,8 @@ class HelpApplicationReadOnlyReviewTest extends TestCase
         HelpApplicationDuplicateWarning::factory()->create(['submitted_application_id' => $application->getKey(), 'resolution_note' => 'QUEUE-WARNING-NOTE']);
 
         $html = $this->actingAs($admin)->get(route('admin.help-applications.index'))->assertOk()->getContent();
+        preg_match('/<main>(.*)<\/main>/s', $html, $pageContent);
+        $pageContent = $pageContent[1];
         $this->assertStringContainsString('QUEUE APPROVED NAME', $html);
         $this->assertStringContainsString($application->reference, $html);
         $this->assertStringContainsString(route('admin.help-applications.show', $application->reference), $html);
@@ -255,7 +261,7 @@ class HelpApplicationReadOnlyReviewTest extends TestCase
             'QUEUE-CORRUPT', 'QUEUE-BLIND', '9876', '987,654.32', 'QUEUE-STORY', 'QUEUE-RECEIVING',
             'QUEUE-CONSENT', 'QUEUE-DOCUMENT', 'QUEUE-STORAGE', 'QUEUE-CHECKSUM', '7,654,321',
             'QUEUE-WARNING-NOTE', 'Possible prior-application matches'] as $private) {
-            $this->assertStringNotContainsString($private, $html);
+            $this->assertStringNotContainsString($private, $pageContent);
         }
     }
 

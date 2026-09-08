@@ -7,7 +7,36 @@
         $securityStatuses = ['pending' => ['Processing', 'قيد المعالجة'], 'accepted_unscanned' => ['Structurally accepted; not malware-scanned', 'مقبول بنيويًا؛ لم يُفحص من البرمجيات الخبيثة'], 'clean' => ['Malware scan completed', 'اكتمل فحص البرمجيات الخبيثة'], 'rejected' => ['Not accepted', 'غير مقبول']];
     @endphp
     <div class="py-12"><div class="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
+        @if (session('status') === 'help-application-category-assigned')
+            <div role="status" class="bg-green-50 p-4 text-sm text-green-800">Category assigned successfully. / <span lang="ar" dir="rtl">تم تعيين الفئة بنجاح.</span></div>
+        @elseif (session('status') === 'help-application-category-already-assigned')
+            <div role="status" class="bg-blue-50 p-4 text-sm text-blue-800">Category already assigned. / <span lang="ar" dir="rtl">تم تعيين الفئة بالفعل.</span></div>
+        @endif
         <a href="{{ route('admin.help-applications.in-review.index') }}" class="text-indigo-600 hover:text-indigo-800">← In-review applications / <span lang="ar" dir="rtl">الطلبات قيد المراجعة</span></a>
+        <section class="rounded-lg bg-white p-6 shadow-sm" aria-labelledby="category-assignment">
+            <h2 id="category-assignment" class="text-lg font-semibold">Application category / <span lang="ar" dir="rtl">فئة الطلب</span></h2>
+            @if ($assignedCategory)
+                <p class="mt-4">{{ $assignedCategory->name_en }} / <span lang="ar" dir="rtl">{{ $assignedCategory->name_ar }}</span></p>
+                @if (! $assignedCategory->is_active || $assignedCategory->deleted_at)
+                    <p class="mt-1 text-sm text-gray-700">Unavailable for new assignments / <span lang="ar" dir="rtl">غير متاحة للتعيينات الجديدة</span></p>
+                @endif
+            @elseif ($unassigned && $availableCategories->isNotEmpty())
+                <form class="mt-4" method="POST" action="{{ route('admin.help-applications.in-review.assign-category', $application->reference) }}">
+                    @csrf
+                    <label for="category" class="text-sm font-medium text-gray-700">Category / <span lang="ar" dir="rtl">الفئة</span></label>
+                    <select id="category" name="category" required @if ($errors->has('category')) aria-invalid="true" aria-describedby="category-error" @endif class="mt-1 block w-full rounded-md shadow-sm {{ $errors->has('category') ? 'border-red-200 focus:border-red-500 focus:ring-red-500' : 'border-gray-300 focus:border-indigo-500 focus:ring-indigo-500' }}">
+                        <option value="">Select / اختر</option>
+                        @foreach ($availableCategories as $category)
+                            <option value="{{ $category->slug }}" @selected(old('category') === $category->slug)>{{ $category->name_en }} / {{ $category->name_ar }}</option>
+                        @endforeach
+                    </select>
+                    @error('category')<p id="category-error" class="mt-2 text-sm text-red-800">{{ $message }}</p>@enderror
+                    <button type="submit" class="mt-4 rounded-md bg-indigo-600 px-4 py-2 font-semibold text-white hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">Assign category / <span lang="ar" dir="rtl">تعيين الفئة</span></button>
+                </form>
+            @elseif ($unassigned)
+                <p class="mt-4 text-gray-700">No active categories are available. / <span lang="ar" dir="rtl">لا توجد فئات نشطة متاحة.</span></p>
+            @endif
+        </section>
         <section class="rounded-lg bg-white p-6 shadow-sm" aria-labelledby="application-status"><h2 id="application-status" class="text-lg font-semibold">Application lifecycle / <span lang="ar" dir="rtl">دورة حياة الطلب</span></h2><dl class="mt-4 grid gap-4 sm:grid-cols-2">
             <div><dt class="text-sm font-medium text-gray-500">Reference / <span lang="ar" dir="rtl">المرجع</span></dt><dd class="mt-1 break-all font-mono">{{ $application->reference }}</dd></div>
             <div><dt class="text-sm font-medium text-gray-500">Status / <span lang="ar" dir="rtl">الحالة</span></dt><dd class="mt-1">Under review / <span lang="ar" dir="rtl">قيد المراجعة</span></dd></div>

@@ -28,6 +28,10 @@ Route::get('/admin', AdminDashboardController::class)
 Route::middleware(['auth', 'role:admin,super_admin'])->group(function () {
     Route::get('/admin/help-applications/in-review', [InReviewHelpApplicationController::class, 'index'])
         ->name('admin.help-applications.in-review.index');
+    Route::post('/admin/help-applications/in-review/{helpApplication}/assign-category', [InReviewHelpApplicationController::class, 'assignCategory'])
+        ->whereUuid('helpApplication')
+        ->middleware('throttle:10,1')
+        ->name('admin.help-applications.in-review.assign-category');
     Route::get('/admin/help-applications/in-review/{helpApplication}', [InReviewHelpApplicationController::class, 'show'])
         ->whereUuid('helpApplication')
         ->name('admin.help-applications.in-review.show');

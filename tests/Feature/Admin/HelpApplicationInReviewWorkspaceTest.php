@@ -24,25 +24,30 @@ class HelpApplicationInReviewWorkspaceTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_exact_read_only_routes_are_ordered_before_the_pending_wildcard(): void
+    public function test_exact_in_review_routes_include_two_reads_and_one_bounded_category_mutation(): void
     {
         $routes = collect(app('router')->getRoutes());
         $inReview = $routes->filter(fn ($route) => str_starts_with((string) $route->getName(), 'admin.help-applications.in-review.'))->values();
 
-        $this->assertCount(2, $inReview);
-        $this->assertSame(['admin.help-applications.in-review.index', 'admin.help-applications.in-review.show'], $inReview->pluck('action.as')->all());
-        foreach ($inReview as $route) {
+        $this->assertCount(3, $inReview);
+        $this->assertSame([
+            'admin.help-applications.in-review.index',
+            'admin.help-applications.in-review.assign-category',
+            'admin.help-applications.in-review.show',
+        ], $inReview->pluck('action.as')->all());
+        foreach ($inReview->whereIn('action.as', ['admin.help-applications.in-review.index', 'admin.help-applications.in-review.show']) as $route) {
             $this->assertSame(['GET', 'HEAD'], $route->methods());
             $this->assertSame(['web', 'auth', 'role:admin,super_admin'], $route->gatherMiddleware());
         }
         $this->assertSame('admin/help-applications/in-review', $inReview[0]->uri());
-        $this->assertSame('admin/help-applications/in-review/{helpApplication}', $inReview[1]->uri());
-        $this->assertSame('[\\da-fA-F]{8}-[\\da-fA-F]{4}-[\\da-fA-F]{4}-[\\da-fA-F]{4}-[\\da-fA-F]{12}', $inReview[1]->wheres['helpApplication']);
+        $this->assertSame('admin/help-applications/in-review/{helpApplication}/assign-category', $inReview[1]->uri());
+        $this->assertSame('admin/help-applications/in-review/{helpApplication}', $inReview[2]->uri());
+        $this->assertSame('[\\da-fA-F]{8}-[\\da-fA-F]{4}-[\\da-fA-F]{4}-[\\da-fA-F]{4}-[\\da-fA-F]{12}', $inReview[2]->wheres['helpApplication']);
         $this->assertLessThan(
             $routes->search(fn ($route) => $route->getName() === 'admin.help-applications.show'),
             $routes->search(fn ($route) => $route->getName() === 'admin.help-applications.in-review.index'),
         );
-        $this->assertEmpty($inReview->filter(fn ($route) => array_intersect($route->methods(), ['POST', 'PUT', 'PATCH', 'DELETE'])));
+        $this->assertSame(['POST'], $inReview[1]->methods());
     }
 
     public function test_authentication_role_disabled_and_password_change_boundaries_are_preserved(): void
@@ -129,7 +134,6 @@ class HelpApplicationInReviewWorkspaceTest extends TestCase
         $response->assertOk()->assertHeader('Cache-Control', 'no-store, private')->assertHeader('Pragma', 'no-cache')
             ->assertSee('Reviewer unavailable / المسؤول غير متاح')->assertSee('synthetic-supporting-document.pdf')
             ->assertDontSee('Download')->assertDontSee('Preview');
-        $this->assertStringNotContainsString('<form', file_get_contents(resource_path('views/admin/help-applications/in-review/show.blade.php')));
     }
 
     public function test_normal_detail_shows_approved_fields_only_and_escapes_values(): void
@@ -603,10 +607,12 @@ class HelpApplicationInReviewWorkspaceTest extends TestCase
             ->assertOk()->assertViewIs('admin.help-applications.in-review.index');
     }
 
-    public function test_detail_template_contains_no_workflow_form_or_mutation_control(): void
+    public function test_detail_template_contains_only_the_bounded_category_assignment_workflow_form(): void
     {
         $source = file_get_contents(resource_path('views/admin/help-applications/in-review/show.blade.php'));
-        foreach (['<form', '<button', 'start-review', 'categories.store', 'categories.update', 'reviewer reassignment',
+        $this->assertSame(1, substr_count($source, '<form'));
+        $this->assertSame(1, substr_count($source, '<button'));
+        foreach (['start-review', 'categories.store', 'categories.update', 'reviewer reassignment',
             'request-information', 'applications.approve', 'applications.reject', 'warnings.resolve',
             'documents.store', 'documents.destroy', 'documents.download', 'documents.preview'] as $prohibited) {
             $this->assertStringNotContainsStringIgnoringCase($prohibited, $source);
