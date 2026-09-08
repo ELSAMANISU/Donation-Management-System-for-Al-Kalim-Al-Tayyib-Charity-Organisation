@@ -29,8 +29,13 @@
                         </x-nav-link>
                     @endcan
                     @can('reviewPendingAny', \App\Models\HelpApplication::class)
-                        <x-nav-link :href="route('admin.help-applications.index')" :active="request()->routeIs('admin.help-applications.*')">
+                        <x-nav-link :href="route('admin.help-applications.index')" :active="request()->routeIs('admin.help-applications.index', 'admin.help-applications.show', 'admin.help-applications.start-review')">
                             Help Applications / <span lang="ar" dir="rtl">طلبات المساعدة</span>
+                        </x-nav-link>
+                    @endcan
+                    @can('reviewInProgressAny', \App\Models\HelpApplication::class)
+                        <x-nav-link :href="route('admin.help-applications.in-review.index')" :active="request()->routeIs('admin.help-applications.in-review.*')">
+                            In-review Applications / <span lang="ar" dir="rtl">الطلبات قيد المراجعة</span>
                         </x-nav-link>
                     @endcan
                     @can('viewAny', \App\Models\Category::class)
@@ -122,8 +127,13 @@
                 </x-responsive-nav-link>
             @endcan
             @can('reviewPendingAny', \App\Models\HelpApplication::class)
-                <x-responsive-nav-link :href="route('admin.help-applications.index')" :active="request()->routeIs('admin.help-applications.*')">
+                <x-responsive-nav-link :href="route('admin.help-applications.index')" :active="request()->routeIs('admin.help-applications.index', 'admin.help-applications.show', 'admin.help-applications.start-review')">
                     Help Applications / <span lang="ar" dir="rtl">طلبات المساعدة</span>
+                </x-responsive-nav-link>
+            @endcan
+            @can('reviewInProgressAny', \App\Models\HelpApplication::class)
+                <x-responsive-nav-link :href="route('admin.help-applications.in-review.index')" :active="request()->routeIs('admin.help-applications.in-review.*')">
+                    In-review Applications / <span lang="ar" dir="rtl">الطلبات قيد المراجعة</span>
                 </x-responsive-nav-link>
             @endcan
             @can('viewAny', \App\Models\Category::class)

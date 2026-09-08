@@ -24,8 +24,14 @@ class HelpApplicationReadOnlyReviewTest extends TestCase
             fn ($route) => str_starts_with((string) $route->getName(), 'admin.help-applications.'),
         );
 
-        $this->assertCount(3, $routes);
-        $this->assertSame(['admin.help-applications.index', 'admin.help-applications.show', 'admin.help-applications.start-review'], $routes->pluck('action.as')->sort()->values()->all());
+        $this->assertCount(5, $routes);
+        $this->assertSame([
+            'admin.help-applications.in-review.index',
+            'admin.help-applications.in-review.show',
+            'admin.help-applications.index',
+            'admin.help-applications.show',
+            'admin.help-applications.start-review',
+        ], $routes->pluck('action.as')->sort()->values()->all());
         foreach ($routes->whereIn('action.as', ['admin.help-applications.index', 'admin.help-applications.show']) as $route) {
             $this->assertSame(['GET', 'HEAD'], $route->methods());
             $this->assertContains('web', $route->gatherMiddleware());
@@ -402,7 +408,7 @@ class HelpApplicationReadOnlyReviewTest extends TestCase
         $url = route('admin.help-applications.index');
         foreach ([User::factory()->admin()->create(), User::factory()->superAdmin()->create()] as $actor) {
             $html = $this->actingAs($actor)->get(route('admin.dashboard'))->assertOk()->getContent();
-            $this->assertSame(2, substr_count($html, $url));
+            $this->assertSame(2, substr_count($html, 'href="'.$url.'"'));
             $this->assertSame(2, substr_count($html, 'Help Applications'));
             $this->assertSame(2, substr_count($html, 'طلبات المساعدة'));
         }

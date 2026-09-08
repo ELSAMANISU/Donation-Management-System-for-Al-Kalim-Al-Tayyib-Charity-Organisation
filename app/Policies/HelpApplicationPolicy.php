@@ -48,6 +48,22 @@ class HelpApplicationPolicy
             && $application->status === HelpApplicationStatus::Pending;
     }
 
+    public function reviewInProgressAny(User $actor): bool
+    {
+        return $this->isEligibleAdministrator($actor);
+    }
+
+    public function reviewInProgress(User $actor, HelpApplication $application): bool
+    {
+        if (! $this->isEligibleAdministrator($actor)
+            || $application->status !== HelpApplicationStatus::UnderReview) {
+            return false;
+        }
+
+        return $actor->hasRole(UserRole::SuperAdmin)
+            || $application->reviewed_by === $actor->getKey();
+    }
+
     public function startReview(User $actor, HelpApplication $application): bool
     {
         return $this->isEligibleAdministrator($actor)

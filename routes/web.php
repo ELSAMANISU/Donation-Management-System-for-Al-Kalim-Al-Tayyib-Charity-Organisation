@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\CampaignController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\HelpApplicationController as AdminHelpApplicationController;
+use App\Http\Controllers\Admin\InReviewHelpApplicationController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Applicant\HelpApplicationController;
 use App\Http\Controllers\Applicant\HelpApplicationDocumentController;
@@ -25,6 +26,11 @@ Route::get('/admin', AdminDashboardController::class)
     ->name('admin.dashboard');
 
 Route::middleware(['auth', 'role:admin,super_admin'])->group(function () {
+    Route::get('/admin/help-applications/in-review', [InReviewHelpApplicationController::class, 'index'])
+        ->name('admin.help-applications.in-review.index');
+    Route::get('/admin/help-applications/in-review/{helpApplication}', [InReviewHelpApplicationController::class, 'show'])
+        ->whereUuid('helpApplication')
+        ->name('admin.help-applications.in-review.show');
     Route::get('/admin/help-applications', [AdminHelpApplicationController::class, 'index'])
         ->name('admin.help-applications.index');
     Route::get('/admin/help-applications/{helpApplication}', [AdminHelpApplicationController::class, 'show'])
