@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\Authenticate;
 use App\Http\Middleware\EnsureAccountIsActive;
 use App\Http\Middleware\EnsureRequiredPasswordHasBeenChanged;
 use App\Http\Middleware\EnsureUserHasRole;
@@ -15,8 +16,9 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         // Resolution outcomes are exact enum inputs; the Form Request trims only the note.
-        $middleware->trimStrings(except: [fn ($request) => $request->is('admin/help-applications/in-review/*/duplicate-warnings/*/resolve')]);
+        $middleware->trimStrings(except: [fn ($request) => $request->is('admin/help-applications/in-review/*/duplicate-warnings/*/resolve', 'admin/help-applications/in-review/*/decide')]);
         $middleware->alias([
+            'auth' => Authenticate::class,
             'role' => EnsureUserHasRole::class,
         ]);
 
@@ -26,5 +28,5 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        $exceptions->dontFlash(['identity_document_number', 'document', 'purpose', 'consent', 'resolution_note']);
+        $exceptions->dontFlash(['identity_document_number', 'document', 'purpose', 'consent', 'resolution_note', 'decision_note']);
     })->create();

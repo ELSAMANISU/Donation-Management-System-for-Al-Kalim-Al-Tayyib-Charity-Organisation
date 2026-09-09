@@ -9,7 +9,7 @@ final class InternalNotificationEventKey
 {
     public function make(InternalNotificationEventType $type, int $applicationId): string
     {
-        if ($type !== InternalNotificationEventType::HelpApplicationSubmitted || $applicationId < 1) {
+        if ($applicationId < 1) {
             throw new InvalidArgumentException('Internal notification event key input is invalid.');
         }
 

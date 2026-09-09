@@ -12,6 +12,7 @@ use App\Models\HelpApplicationDocument;
 use App\Models\HelpApplicationDuplicateWarning;
 use App\Models\User;
 use App\Services\HelpApplicationCategoryAssignmentService;
+use App\Services\HelpApplicationDecisionService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -94,9 +95,11 @@ class InReviewHelpApplicationController extends Controller
                 ->active()->whereExists($assignableApplication)->inDisplayOrder()->get();
         }
 
+        $decisionReadiness = app(HelpApplicationDecisionService::class)->readiness($actor, $helpApplication, $application);
+
         return response()->view('admin.help-applications.in-review.show', compact(
             'application', 'documents', 'duplicateWarningCount', 'isSuperAdmin', 'reviewerName',
-            'assignedCategory', 'availableCategories', 'unassigned'
+            'assignedCategory', 'availableCategories', 'unassigned', 'decisionReadiness'
         ), 200, self::PRIVATE_HEADERS);
     }
 

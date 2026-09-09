@@ -1,6 +1,11 @@
 <x-app-layout>
     <x-slot name="header"><h1 class="text-xl font-semibold text-gray-800">Help Applications Under Review / <span lang="ar" dir="rtl">طلبات المساعدة قيد المراجعة</span></h1></x-slot>
     <div class="py-12"><div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8"><div class="overflow-hidden rounded-lg bg-white shadow-sm">
+        @if (session('status') === 'help-application-approved')
+            <p role="status" class="bg-green-50 p-4 text-sm text-green-800">Help Application approved successfully. / تم قبول طلب المساعدة بنجاح.</p>
+        @elseif (session('status') === 'help-application-rejected')
+            <p role="status" class="bg-green-50 p-4 text-sm text-green-800">Help Application rejected successfully. / تم رفض طلب المساعدة بنجاح.</p>
+        @endif
         @if ($applications->isEmpty())
             <p class="p-6 text-gray-700">No help applications are currently under review. / <span lang="ar" dir="rtl">لا توجد طلبات مساعدة قيد المراجعة حاليًا.</span></p>
         @else

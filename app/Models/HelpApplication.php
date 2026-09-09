@@ -25,6 +25,7 @@ class HelpApplication extends Model
 
     /** @var list<string> */
     protected $hidden = [
+        'decision_note',
         'full_name',
         'email',
         'phone',
@@ -49,6 +50,7 @@ class HelpApplication extends Model
         return [
             'status' => HelpApplicationStatus::class,
             'open_slot' => 'boolean',
+            'decision_note' => 'encrypted',
             'full_name' => 'encrypted',
             'email' => 'encrypted',
             'phone' => 'encrypted',

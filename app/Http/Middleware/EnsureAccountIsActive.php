@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Enums\UserRole;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -15,6 +16,11 @@ class EnsureAccountIsActive
     public function handle(Request $request, Closure $next): Response
     {
         $user = Auth::guard('web')->user();
+
+        if ($request->routeIs('admin.help-applications.in-review.decide')) {
+            abort_unless($user !== null && $user->is_active && ! $user->must_change_password
+                && $user->hasAnyRole([UserRole::Admin, UserRole::SuperAdmin]), 404);
+        }
 
         if ($user === null || $user->is_active) {
             return $next($request);

@@ -24,9 +24,10 @@ class HelpApplicationReadOnlyReviewTest extends TestCase
             fn ($route) => str_starts_with((string) $route->getName(), 'admin.help-applications.'),
         );
 
-        $this->assertCount(8, $routes);
+        $this->assertCount(9, $routes);
         $this->assertSame([
             'admin.help-applications.in-review.assign-category',
+            'admin.help-applications.in-review.decide',
             'admin.help-applications.in-review.duplicate-warnings.index',
             'admin.help-applications.in-review.duplicate-warnings.resolve',
             'admin.help-applications.in-review.index',
@@ -56,9 +57,10 @@ class HelpApplicationReadOnlyReviewTest extends TestCase
         $this->assertLessThan($publicWildcardPosition, $allRoutes->search(fn ($route) => $route->getName() === 'admin.help-applications.show'));
         $mutations = $allRoutes->filter(fn ($route) => str_starts_with($route->uri(), 'admin/help-applications')
             && array_intersect($route->methods(), ['POST', 'PUT', 'PATCH', 'DELETE']));
-        $this->assertCount(3, $mutations);
+        $this->assertCount(4, $mutations);
         $this->assertSame([
             'admin.help-applications.in-review.assign-category',
+            'admin.help-applications.in-review.decide',
             'admin.help-applications.in-review.duplicate-warnings.resolve',
             'admin.help-applications.start-review',
         ], $mutations->pluck('action.as')->sort()->values()->all());

@@ -64,6 +64,11 @@ class HelpApplicationPolicy
             || $application->reviewed_by === $actor->getKey();
     }
 
+    public function decide(User $actor, HelpApplication $application): bool
+    {
+        return $this->reviewInProgress($actor, $application);
+    }
+
     public function assignCategory(User $actor, HelpApplication $application): bool
     {
         return $this->reviewInProgress($actor, $application);

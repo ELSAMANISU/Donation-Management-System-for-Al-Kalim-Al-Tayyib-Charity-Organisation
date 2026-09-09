@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\CampaignController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\HelpApplicationController as AdminHelpApplicationController;
+use App\Http\Controllers\Admin\HelpApplicationDecisionController;
 use App\Http\Controllers\Admin\HelpApplicationDuplicateWarningController;
 use App\Http\Controllers\Admin\InReviewHelpApplicationController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
@@ -40,6 +41,10 @@ Route::middleware(['auth', 'role:admin,super_admin'])->group(function () {
         ->whereUuid(['helpApplication', 'duplicateWarning'])
         ->middleware('throttle:10,1')
         ->name('admin.help-applications.in-review.duplicate-warnings.resolve');
+    Route::post('/admin/help-applications/in-review/{helpApplication}/decide', HelpApplicationDecisionController::class)
+        ->whereUuid('helpApplication')
+        ->middleware('throttle:10,1')
+        ->name('admin.help-applications.in-review.decide');
     Route::get('/admin/help-applications/in-review/{helpApplication}', [InReviewHelpApplicationController::class, 'show'])
         ->whereUuid('helpApplication')
         ->name('admin.help-applications.in-review.show');

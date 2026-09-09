@@ -37,11 +37,12 @@
                 <p class="mt-4 text-gray-700">No active categories are available. / <span lang="ar" dir="rtl">لا توجد فئات نشطة متاحة.</span></p>
             @endif
         </section>
+        @include('admin.help-applications.in-review.decision')
         <section class="rounded-lg bg-white p-6 shadow-sm" aria-labelledby="application-status"><h2 id="application-status" class="text-lg font-semibold">Application lifecycle / <span lang="ar" dir="rtl">دورة حياة الطلب</span></h2><dl class="mt-4 grid gap-4 sm:grid-cols-2">
             <div><dt class="text-sm font-medium text-gray-500">Reference / <span lang="ar" dir="rtl">المرجع</span></dt><dd class="mt-1 break-all font-mono">{{ $application->reference }}</dd></div>
             <div><dt class="text-sm font-medium text-gray-500">Status / <span lang="ar" dir="rtl">الحالة</span></dt><dd class="mt-1">Under review / <span lang="ar" dir="rtl">قيد المراجعة</span></dd></div>
-            <div><dt class="text-sm font-medium text-gray-500">Submitted / <span lang="ar" dir="rtl">تاريخ التقديم</span></dt><dd class="mt-1">{{ $application->submitted_at->format('Y-m-d H:i') }}</dd></div>
-            <div><dt class="text-sm font-medium text-gray-500">Review started / <span lang="ar" dir="rtl">تاريخ بدء المراجعة</span></dt><dd class="mt-1">{{ $application->review_started_at->format('Y-m-d H:i') }}</dd></div>
+            <div><dt class="text-sm font-medium text-gray-500">Submitted / <span lang="ar" dir="rtl">تاريخ التقديم</span></dt><dd class="mt-1">{{ $application->submitted_at?->format('Y-m-d H:i') }}</dd></div>
+            <div><dt class="text-sm font-medium text-gray-500">Review started / <span lang="ar" dir="rtl">تاريخ بدء المراجعة</span></dt><dd class="mt-1">{{ $application->review_started_at?->format('Y-m-d H:i') }}</dd></div>
             @if ($isSuperAdmin)<div><dt class="text-sm font-medium text-gray-500">Reviewer / <span lang="ar" dir="rtl">المسؤول</span></dt><dd class="mt-1">{{ $reviewerName ?: 'Reviewer unavailable / المسؤول غير متاح' }}</dd></div>@endif
         </dl></section>
         <section class="rounded-lg bg-white p-6 shadow-sm" aria-labelledby="contact"><h2 id="contact" class="text-lg font-semibold">Contact information / <span lang="ar" dir="rtl">معلومات الاتصال</span></h2><dl class="mt-4 grid gap-4 sm:grid-cols-2">

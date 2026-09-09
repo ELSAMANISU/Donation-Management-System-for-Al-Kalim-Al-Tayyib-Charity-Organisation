@@ -24,15 +24,16 @@ class HelpApplicationInReviewWorkspaceTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_exact_in_review_routes_include_two_reads_and_one_bounded_category_mutation(): void
+    public function test_exact_in_review_routes_include_two_reads_and_bounded_category_and_decision_mutations(): void
     {
         $routes = collect(app('router')->getRoutes());
         $inReview = $routes->filter(fn ($route) => str_starts_with((string) $route->getName(), 'admin.help-applications.in-review.') && ! str_contains((string) $route->getName(), '.duplicate-warnings.'))->values();
 
-        $this->assertCount(3, $inReview);
+        $this->assertCount(4, $inReview);
         $this->assertSame([
             'admin.help-applications.in-review.index',
             'admin.help-applications.in-review.assign-category',
+            'admin.help-applications.in-review.decide',
             'admin.help-applications.in-review.show',
         ], $inReview->pluck('action.as')->all());
         foreach ($inReview->whereIn('action.as', ['admin.help-applications.in-review.index', 'admin.help-applications.in-review.show']) as $route) {
@@ -41,8 +42,8 @@ class HelpApplicationInReviewWorkspaceTest extends TestCase
         }
         $this->assertSame('admin/help-applications/in-review', $inReview[0]->uri());
         $this->assertSame('admin/help-applications/in-review/{helpApplication}/assign-category', $inReview[1]->uri());
-        $this->assertSame('admin/help-applications/in-review/{helpApplication}', $inReview[2]->uri());
-        $this->assertSame('[\\da-fA-F]{8}-[\\da-fA-F]{4}-[\\da-fA-F]{4}-[\\da-fA-F]{4}-[\\da-fA-F]{12}', $inReview[2]->wheres['helpApplication']);
+        $this->assertSame('admin/help-applications/in-review/{helpApplication}', $inReview[3]->uri());
+        $this->assertSame('[\\da-fA-F]{8}-[\\da-fA-F]{4}-[\\da-fA-F]{4}-[\\da-fA-F]{4}-[\\da-fA-F]{12}', $inReview[3]->wheres['helpApplication']);
         $this->assertLessThan(
             $routes->search(fn ($route) => $route->getName() === 'admin.help-applications.show'),
             $routes->search(fn ($route) => $route->getName() === 'admin.help-applications.in-review.index'),

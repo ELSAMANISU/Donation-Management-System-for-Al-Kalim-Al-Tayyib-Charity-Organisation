@@ -12,7 +12,7 @@ final class InternalNotificationPayload
     {
         return $this->validate($type, [
             'application_reference' => $applicationReference,
-            'status' => 'pending',
+            'status' => $this->status($type),
         ]);
     }
 
@@ -22,6 +22,8 @@ final class InternalNotificationPayload
         if (! in_array($type, [
             InternalNotificationType::HelpApplicationSubmissionConfirmation,
             InternalNotificationType::HelpApplicationNewSubmission,
+            InternalNotificationType::HelpApplicationApproved,
+            InternalNotificationType::HelpApplicationRejected,
         ], true) || ! is_array($payload) || array_is_list($payload) || count($payload) !== 2) {
             throw $this->invalid();
         }
@@ -38,11 +40,21 @@ final class InternalNotificationPayload
 
         if (! is_string($reference)
             || preg_match('/\A[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\z/', $reference) !== 1
-            || $status !== 'pending') {
+            || $status !== $this->status($type)) {
             throw $this->invalid();
         }
 
         return ['application_reference' => $reference, 'status' => $status];
+    }
+
+    private function status(InternalNotificationType $type): string
+    {
+        return match ($type) {
+            InternalNotificationType::HelpApplicationApproved => 'approved',
+            InternalNotificationType::HelpApplicationRejected => 'rejected',
+            InternalNotificationType::HelpApplicationSubmissionConfirmation,
+            InternalNotificationType::HelpApplicationNewSubmission => 'pending',
+        };
     }
 
     private function invalid(): InvalidArgumentException
