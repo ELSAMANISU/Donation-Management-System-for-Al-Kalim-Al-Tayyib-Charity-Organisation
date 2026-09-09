@@ -64,6 +64,11 @@
                 </dl>
             @empty <p class="mt-4 text-gray-700">No active supporting-document metadata. / <span lang="ar" dir="rtl">لا توجد بيانات لمستندات داعمة نشطة.</span></p> @endforelse
         </section>
-        <section class="rounded-lg bg-white p-6 shadow-sm" aria-labelledby="matches"><h2 id="matches" class="text-lg font-semibold">Possible prior matches / <span lang="ar" dir="rtl">المطابقات السابقة المحتملة</span></h2><p class="mt-4">Duplicate-warning count / <span lang="ar" dir="rtl">عدد تحذيرات التكرار</span>: {{ $duplicateWarningCount }}</p></section>
+        <section class="rounded-lg bg-white p-6 shadow-sm" aria-labelledby="matches"><h2 id="matches" class="text-lg font-semibold">Possible prior matches / <span lang="ar" dir="rtl">المطابقات السابقة المحتملة</span></h2><p class="mt-4">Duplicate-warning count / <span lang="ar" dir="rtl">عدد تحذيرات التكرار</span>: {{ $duplicateWarningCount }}</p>
+            <a class="text-indigo-600" href="{{ route('admin.help-applications.in-review.duplicate-warnings.index', $application->reference) }}">Review possible matches ({{ $duplicateWarningCount }}) / مراجعة المطابقات المحتملة ({{ $duplicateWarningCount }})</a>
+            @if ($duplicateWarningCount === 0)
+                <p>No possible matches. / لا توجد مطابقات محتملة.</p>
+            @endif
+        </section>
     </div></div>
 </x-app-layout>

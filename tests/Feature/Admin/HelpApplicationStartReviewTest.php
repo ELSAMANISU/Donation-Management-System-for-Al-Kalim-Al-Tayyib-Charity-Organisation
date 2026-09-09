@@ -36,9 +36,10 @@ class HelpApplicationStartReviewTest extends TestCase
             $this->assertContains($middleware, $route->gatherMiddleware());
         }
         $mutations = $routes->filter(fn ($candidate) => array_intersect($candidate->methods(), ['POST', 'PUT', 'PATCH', 'DELETE']));
-        $this->assertCount(2, $mutations);
+        $this->assertCount(3, $mutations);
         $this->assertSame([
             'admin.help-applications.in-review.assign-category',
+            'admin.help-applications.in-review.duplicate-warnings.resolve',
             'admin.help-applications.start-review',
         ], $mutations->pluck('action.as')->sort()->values()->all());
     }

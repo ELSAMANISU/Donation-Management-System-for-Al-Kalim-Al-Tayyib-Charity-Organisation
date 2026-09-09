@@ -27,7 +27,7 @@ class HelpApplicationInReviewWorkspaceTest extends TestCase
     public function test_exact_in_review_routes_include_two_reads_and_one_bounded_category_mutation(): void
     {
         $routes = collect(app('router')->getRoutes());
-        $inReview = $routes->filter(fn ($route) => str_starts_with((string) $route->getName(), 'admin.help-applications.in-review.'))->values();
+        $inReview = $routes->filter(fn ($route) => str_starts_with((string) $route->getName(), 'admin.help-applications.in-review.') && ! str_contains((string) $route->getName(), '.duplicate-warnings.'))->values();
 
         $this->assertCount(3, $inReview);
         $this->assertSame([

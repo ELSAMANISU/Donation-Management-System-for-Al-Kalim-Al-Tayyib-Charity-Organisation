@@ -69,6 +69,18 @@ class HelpApplicationPolicy
         return $this->reviewInProgress($actor, $application);
     }
 
+    public function reviewDuplicateWarnings(User $actor, HelpApplication $application): bool
+    {
+        return $this->isEligibleAdministrator($actor)
+            && $application->status === HelpApplicationStatus::UnderReview
+            && ($actor->hasRole(UserRole::SuperAdmin) || $application->reviewed_by === $actor->getKey());
+    }
+
+    public function resolveDuplicateWarning(User $actor, HelpApplication $application): bool
+    {
+        return $this->reviewDuplicateWarnings($actor, $application);
+    }
+
     public function startReview(User $actor, HelpApplication $application): bool
     {
         return $this->isEligibleAdministrator($actor)

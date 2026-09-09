@@ -35,7 +35,7 @@ class HelpApplicationCategoryAssignmentTest extends TestCase
         $this->assertSame('admin/help-applications/in-review/{helpApplication}/assign-category', $route->uri());
         $this->assertSame(['web', 'auth', 'role:admin,super_admin', 'throttle:10,1'], $route->gatherMiddleware());
         $this->assertSame('[\\da-fA-F]{8}-[\\da-fA-F]{4}-[\\da-fA-F]{4}-[\\da-fA-F]{4}-[\\da-fA-F]{12}', $route->wheres['helpApplication']);
-        $mutations = $routes->filter(fn ($candidate) => str_starts_with($candidate->uri(), 'admin/help-applications/in-review')
+        $mutations = $routes->filter(fn ($candidate) => str_ends_with($candidate->uri(), '/assign-category')
             && array_intersect($candidate->methods(), ['POST', 'PUT', 'PATCH', 'DELETE']));
         $this->assertCount(1, $mutations);
         $this->assertSame($route, $mutations->first());

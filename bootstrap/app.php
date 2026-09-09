@@ -14,6 +14,8 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Resolution outcomes are exact enum inputs; the Form Request trims only the note.
+        $middleware->trimStrings(except: [fn ($request) => $request->is('admin/help-applications/in-review/*/duplicate-warnings/*/resolve')]);
         $middleware->alias([
             'role' => EnsureUserHasRole::class,
         ]);
@@ -24,5 +26,5 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        $exceptions->dontFlash(['identity_document_number', 'document', 'purpose', 'consent']);
+        $exceptions->dontFlash(['identity_document_number', 'document', 'purpose', 'consent', 'resolution_note']);
     })->create();
