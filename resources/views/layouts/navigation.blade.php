@@ -38,6 +38,11 @@
                             In-review Applications / <span lang="ar" dir="rtl">الطلبات قيد المراجعة</span>
                         </x-nav-link>
                     @endcan
+                    @can('viewDecidedAny', \App\Models\HelpApplication::class)
+                        <x-nav-link :href="route('admin.help-applications.decided.index')" :active="request()->routeIs('admin.help-applications.decided.*')">
+                            Decided Applications / <span lang="ar" dir="rtl">الطلبات المحسومة</span>
+                        </x-nav-link>
+                    @endcan
                     @can('viewAny', \App\Models\Category::class)
                         <x-nav-link :href="route('admin.categories.index')" :active="request()->routeIs('admin.categories.*')">
                             Categories / <span lang="ar" dir="rtl">الفئات</span>
@@ -134,6 +139,11 @@
             @can('reviewInProgressAny', \App\Models\HelpApplication::class)
                 <x-responsive-nav-link :href="route('admin.help-applications.in-review.index')" :active="request()->routeIs('admin.help-applications.in-review.*')">
                     In-review Applications / <span lang="ar" dir="rtl">الطلبات قيد المراجعة</span>
+                </x-responsive-nav-link>
+            @endcan
+            @can('viewDecidedAny', \App\Models\HelpApplication::class)
+                <x-responsive-nav-link :href="route('admin.help-applications.decided.index')" :active="request()->routeIs('admin.help-applications.decided.*')">
+                    Decided Applications / <span lang="ar" dir="rtl">الطلبات المحسومة</span>
                 </x-responsive-nav-link>
             @endcan
             @can('viewAny', \App\Models\Category::class)

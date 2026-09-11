@@ -69,6 +69,23 @@ class HelpApplicationPolicy
         return $this->reviewInProgress($actor, $application);
     }
 
+    public function viewDecidedAny(User $actor): bool
+    {
+        return $this->isEligibleAdministrator($actor);
+    }
+
+    public function viewDecided(User $actor, HelpApplication $application): bool
+    {
+        return $this->isEligibleAdministrator($actor)
+            && in_array($application->status, [HelpApplicationStatus::Approved, HelpApplicationStatus::Rejected, HelpApplicationStatus::ConvertedToCampaign], true)
+            && ($actor->hasRole(UserRole::SuperAdmin) || $application->reviewed_by === $actor->getKey());
+    }
+
+    public function convertToCampaign(User $actor, HelpApplication $application): bool
+    {
+        return $this->viewDecided($actor, $application) && $application->status === HelpApplicationStatus::Approved;
+    }
+
     public function assignCategory(User $actor, HelpApplication $application): bool
     {
         return $this->reviewInProgress($actor, $application);

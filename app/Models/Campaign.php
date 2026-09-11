@@ -17,6 +17,13 @@ class Campaign extends Model
     /** @use HasFactory<CampaignFactory> */
     use HasFactory, SoftDeletes;
 
+    protected $hidden = ['help_application_id', 'helpApplication'];
+
+    public function helpApplication(): BelongsTo
+    {
+        return $this->belongsTo(HelpApplication::class);
+    }
+
     /**
      * Only privacy-safe public copy and image metadata may be mass assigned.
      * Financial, lifecycle, ownership, and deletion state must be assigned by

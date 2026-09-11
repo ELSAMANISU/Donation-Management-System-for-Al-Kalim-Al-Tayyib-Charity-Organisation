@@ -1,0 +1,1 @@
+{{ match ($application->status->value) { 'approved' => 'Approved / مقبول', 'rejected' => 'Rejected / مرفوض', 'converted_to_campaign' => 'Converted to Campaign / محوّل إلى حملة' } }}

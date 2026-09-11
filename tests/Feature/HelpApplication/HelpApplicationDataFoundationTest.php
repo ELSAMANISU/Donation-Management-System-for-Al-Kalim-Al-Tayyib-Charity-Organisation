@@ -11,6 +11,8 @@ use App\Models\HelpApplication;
 use App\Models\User;
 use App\Services\IdentityBlindIndex;
 use Illuminate\Database\Eloquent\MassAssignmentException;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -24,7 +26,7 @@ class HelpApplicationDataFoundationTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_schema_contains_the_private_foundation_without_campaign_coupling(): void
+    public function test_schema_contains_the_private_foundation_with_nullable_campaign_relationship(): void
     {
         $this->assertTrue(Schema::hasColumns('help_applications', [
             'id', 'reference', 'applicant_id', 'category_id', 'status', 'open_slot',
@@ -37,9 +39,9 @@ class HelpApplicationDataFoundationTest extends TestCase
             'status_changed_at', 'appeal_eligibility_ended_at', 'updated_by', 'created_at', 'updated_at',
         ]));
         $this->assertFalse(Schema::hasColumn('help_applications', 'deleted_at'));
-        $this->assertFalse(Schema::hasColumn('campaigns', 'help_application_id'));
-        $this->assertFalse(method_exists(Campaign::class, 'helpApplication'));
-        $this->assertFalse(method_exists(HelpApplication::class, 'campaign'));
+        $this->assertTrue(Schema::hasColumn('campaigns', 'help_application_id'));
+        $this->assertInstanceOf(BelongsTo::class, (new Campaign)->helpApplication());
+        $this->assertInstanceOf(HasOne::class, (new HelpApplication)->campaign());
     }
 
     public function test_sqlite_schema_has_expected_named_indexes_and_foreign_keys(): void
@@ -280,9 +282,9 @@ class HelpApplicationDataFoundationTest extends TestCase
         $this->assertTrue($owned->category->trashed());
         $this->assertSame($assignedCategory->id, $owned->category->id);
 
-        $this->assertFalse(Schema::hasColumn('campaigns', 'help_application_id'));
-        $this->assertFalse(method_exists(Campaign::class, 'helpApplication'));
-        $this->assertFalse(method_exists(HelpApplication::class, 'campaign'));
+        $this->assertTrue(Schema::hasColumn('campaigns', 'help_application_id'));
+        $this->assertInstanceOf(BelongsTo::class, (new Campaign)->helpApplication());
+        $this->assertInstanceOf(HasOne::class, (new HelpApplication)->campaign());
     }
 
     public function test_requested_amount_round_trips_as_exact_strings_without_float_casts(): void

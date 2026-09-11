@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class HelpApplication extends Model
 {
@@ -89,6 +90,11 @@ class HelpApplication extends Model
     public function applicant(): BelongsTo
     {
         return $this->belongsTo(User::class, 'applicant_id');
+    }
+
+    public function campaign(): HasOne
+    {
+        return $this->hasOne(Campaign::class)->withTrashed();
     }
 
     public function category(): BelongsTo

@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\AdministratorController;
 use App\Http\Controllers\Admin\CampaignController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Admin\DecidedHelpApplicationController;
 use App\Http\Controllers\Admin\HelpApplicationController as AdminHelpApplicationController;
 use App\Http\Controllers\Admin\HelpApplicationDecisionController;
 use App\Http\Controllers\Admin\HelpApplicationDuplicateWarningController;
@@ -28,6 +29,12 @@ Route::get('/admin', AdminDashboardController::class)
     ->name('admin.dashboard');
 
 Route::middleware(['auth', 'role:admin,super_admin'])->group(function () {
+    Route::get('/admin/help-applications/decided', [DecidedHelpApplicationController::class, 'index'])
+        ->name('admin.help-applications.decided.index');
+    Route::get('/admin/help-applications/decided/{helpApplication}', [DecidedHelpApplicationController::class, 'show'])
+        ->whereUuid('helpApplication')->name('admin.help-applications.decided.show');
+    Route::post('/admin/help-applications/decided/{helpApplication}/convert-to-campaign', [DecidedHelpApplicationController::class, 'convert'])
+        ->whereUuid('helpApplication')->middleware('throttle:10,1')->name('admin.help-applications.decided.convert-to-campaign');
     Route::get('/admin/help-applications/in-review', [InReviewHelpApplicationController::class, 'index'])
         ->name('admin.help-applications.in-review.index');
     Route::post('/admin/help-applications/in-review/{helpApplication}/assign-category', [InReviewHelpApplicationController::class, 'assignCategory'])

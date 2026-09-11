@@ -71,7 +71,7 @@ class HelpApplicationDecisionTest extends TestCase
     public function test_route_is_exact_uuid_constrained_post_with_exact_middleware_and_order(): void
     {
         $routes = collect(app('router')->getRoutes());
-        $decisions = $routes->filter(fn ($route) => str_contains($route->uri(), '/decide'))->values();
+        $decisions = $routes->filter(fn ($route) => str_ends_with($route->uri(), '/decide'))->values();
         $this->assertCount(1, $decisions);
         $route = $decisions->first();
         $this->assertSame('admin.help-applications.in-review.decide', $route->getName());

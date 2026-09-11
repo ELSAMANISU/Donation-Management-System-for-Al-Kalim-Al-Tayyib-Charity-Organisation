@@ -3,8 +3,10 @@
 namespace App\Services;
 
 use App\Enums\CampaignStatus;
+use App\Enums\HelpApplicationStatus;
 use App\Models\Campaign;
 use App\Models\Category;
+use App\Models\HelpApplication;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -19,6 +21,8 @@ class CampaignUpdateService
     public function update(User $actor, Campaign $campaign, array $attributes, Request $request): Campaign
     {
         return DB::transaction(function () use ($actor, $campaign, $attributes, $request): Campaign {
+            $linkedApplication = $campaign->help_application_id === null ? null : HelpApplication::query()
+                ->select(['id', 'category_id', 'requested_amount', 'status'])->whereKey($campaign->help_application_id)->lockForUpdate()->firstOrFail();
             $lockedActor = User::query()->lockForUpdate()->findOrFail($actor->id);
             $lockedCampaign = Campaign::query()->lockForUpdate()->findOrFail($campaign->id);
             Gate::forUser($lockedActor)->authorize('update', $lockedCampaign);
@@ -28,11 +32,20 @@ class CampaignUpdateService
             if ($lockedCampaign->raised_amount !== '0.00') {
                 throw ValidationException::withMessages(['target_amount' => 'This draft has an unexpected raised balance and cannot be edited. / تحتوي هذه المسودة على رصيد مرفوع غير متوقع ولا يمكن تعديلها.']);
             }
-            $category = Category::query()->lockForUpdate()->find($attributes['category_id']);
-            if (! $category || ! $category->is_active) {
-                throw ValidationException::withMessages(['category_id' => 'The selected category is unavailable. / الفئة المحددة غير متاحة.']);
+            if ($lockedCampaign->help_application_id !== null) {
+                $application = $linkedApplication;
+                abort_unless($application !== null && $application->id === $lockedCampaign->help_application_id
+                    && $lockedCampaign->published_at === null, 404);
+                abort_unless($application->category_id === $lockedCampaign->category_id
+                    && $application->status === HelpApplicationStatus::ConvertedToCampaign, 404);
+                $attributes['target_amount'] = CampaignApplicationAmount::validate($attributes['target_amount'], $application->requested_amount);
+                $category = Category::withTrashed()->lockForUpdate()->findOrFail($lockedCampaign->category_id);
+            } else {
+                $category = Category::query()->lockForUpdate()->find($attributes['category_id']);
+                if (! $category || ! $category->is_active) {
+                    throw ValidationException::withMessages(['category_id' => 'The selected category is unavailable. / الفئة المحددة غير متاحة.']);
+                }
             }
-
             $editable = ['category_id', 'title_ar', 'title_en', 'summary_ar', 'summary_en', 'story_ar', 'story_en', 'target_amount'];
             $changed = [];
             foreach ($editable as $field) {

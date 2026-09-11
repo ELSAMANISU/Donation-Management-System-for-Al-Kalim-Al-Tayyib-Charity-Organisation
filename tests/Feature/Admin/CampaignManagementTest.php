@@ -85,6 +85,7 @@ class CampaignManagementTest extends TestCase
         $this->assertFalse($campaign->is_featured);
         $this->assertFalse($campaign->is_urgent);
         $this->assertSame(0, $campaign->priority);
+        $this->assertNull($campaign->help_application_id);
         $this->assertSame($admin->id, $campaign->created_by);
         $this->assertSame($admin->id, $campaign->updated_by);
         foreach (['image_path', 'image_alt_ar', 'image_alt_en', 'expires_at', 'published_at', 'paused_at', 'funded_at', 'aid_delivery_started_at', 'completed_at', 'cancelled_at', 'deleted_at'] as $field) {

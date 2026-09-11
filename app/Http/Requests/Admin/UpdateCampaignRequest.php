@@ -28,7 +28,7 @@ class UpdateCampaignRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'category_id' => ['required', 'integer', Rule::exists(Category::class, 'id')->where(fn ($query) => $query->where('is_active', true)->whereNull('deleted_at'))],
+            'category_id' => $this->route('campaign')->help_application_id !== null ? ['exclude'] : ['required', 'integer', Rule::exists(Category::class, 'id')->where(fn ($query) => $query->where('is_active', true)->whereNull('deleted_at'))],
             'title_ar' => ['required', 'string', 'max:255'], 'title_en' => ['required', 'string', 'max:255'],
             'summary_ar' => ['required', 'string', 'max:1000'], 'summary_en' => ['required', 'string', 'max:1000'],
             'story_ar' => ['required', 'string', 'max:20000'], 'story_en' => ['required', 'string', 'max:20000'],

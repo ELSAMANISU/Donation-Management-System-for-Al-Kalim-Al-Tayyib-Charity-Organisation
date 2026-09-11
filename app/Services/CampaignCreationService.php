@@ -36,6 +36,7 @@ class CampaignCreationService
                 }
 
                 $campaign = new Campaign;
+                $campaign->help_application_id = null;
                 $campaign->category_id = $category->id;
                 $campaign->slug = $slug;
                 foreach (['title_ar', 'title_en', 'summary_ar', 'summary_en', 'story_ar', 'story_en'] as $field) {

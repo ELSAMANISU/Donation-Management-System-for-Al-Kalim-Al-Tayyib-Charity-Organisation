@@ -8,6 +8,7 @@ use App\Models\Campaign;
 use App\Models\Category;
 use App\Models\User;
 use Carbon\CarbonImmutable;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Route;
@@ -21,7 +22,7 @@ class CampaignDataFoundationTest extends TestCase
     public function test_schema_contains_only_the_expected_campaign_foundation_columns(): void
     {
         $expected = [
-            'id', 'category_id', 'slug', 'title_ar', 'title_en', 'summary_ar', 'summary_en',
+            'id', 'category_id', 'help_application_id', 'slug', 'title_ar', 'title_en', 'summary_ar', 'summary_en',
             'story_ar', 'story_en', 'target_amount', 'raised_amount', 'status', 'is_featured',
             'is_urgent', 'priority', 'image_path', 'image_alt_ar', 'image_alt_en', 'expires_at',
             'published_at', 'paused_at', 'pause_reason', 'funded_at', 'aid_delivery_started_at',
@@ -30,7 +31,7 @@ class CampaignDataFoundationTest extends TestCase
         ];
 
         $this->assertEqualsCanonicalizing($expected, Schema::getColumnListing('campaigns'));
-        $this->assertFalse(Schema::hasColumn('campaigns', 'help_application_id'));
+        $this->assertTrue(Schema::hasColumn('campaigns', 'help_application_id'));
 
         foreach (['beneficiary_id', 'applicant_id', 'identity_number', 'passport_number',
             'receiving_method', 'account_identifier', 'document_path', 'private_notes',
@@ -297,9 +298,14 @@ class CampaignDataFoundationTest extends TestCase
         );
     }
 
-    public function test_help_application_relationship_is_not_defined(): void
+    public function test_help_application_relationship_is_nullable_and_hidden(): void
     {
-        $this->assertFalse(method_exists(new Campaign, 'helpApplication'));
+        $campaign = Campaign::factory()->create();
+        $this->assertInstanceOf(BelongsTo::class, $campaign->helpApplication());
+        $this->assertNull($campaign->help_application_id);
+        $campaign->load('helpApplication');
+        $this->assertArrayNotHasKey('help_application', $campaign->toArray());
+        $this->assertArrayNotHasKey('help_application_id', $campaign->toArray());
     }
 
     public function test_existing_case_routes_and_hard_coded_public_pages_are_unchanged(): void

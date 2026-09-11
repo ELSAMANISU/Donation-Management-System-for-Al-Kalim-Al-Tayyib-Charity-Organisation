@@ -15,8 +15,8 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        // Resolution outcomes are exact enum inputs; the Form Request trims only the note.
-        $middleware->trimStrings(except: [fn ($request) => $request->is('admin/help-applications/in-review/*/duplicate-warnings/*/resolve', 'admin/help-applications/in-review/*/decide')]);
+        // Preserve canonical outcomes and history filters; Form Requests normalize their allowlisted text.
+        $middleware->trimStrings(except: [fn ($request) => $request->is('admin/help-applications/in-review/*/duplicate-warnings/*/resolve', 'admin/help-applications/in-review/*/decide', 'admin/help-applications/decided', 'admin/help-applications/decided/*')]);
         $middleware->alias([
             'auth' => Authenticate::class,
             'role' => EnsureUserHasRole::class,
