@@ -308,23 +308,23 @@ class CampaignDataFoundationTest extends TestCase
         $this->assertArrayNotHasKey('help_application_id', $campaign->toArray());
     }
 
-    public function test_existing_case_routes_and_hard_coded_public_pages_are_unchanged(): void
+    public function test_existing_case_routes_display_published_database_campaigns(): void
     {
         $index = Route::getRoutes()->getByName('cases.index');
         $show = Route::getRoutes()->getByName('cases.show');
         $this->assertSame('{locale}/cases', $index->uri());
-        $this->assertSame('{locale}/cases/{id}', $show->uri());
+        $this->assertSame('{locale}/cases/{campaign}', $show->uri());
         $this->assertSame(DonationCaseController::class.'@index', $index->getActionName());
         $this->assertSame(DonationCaseController::class.'@show', $show->getActionName());
 
-        Campaign::factory()->active()->create(['title_en' => 'Persistent Campaign Must Stay Hidden']);
+        $campaign = Campaign::factory()->active()->create(['title_en' => 'Published database Campaign']);
         $this->get(route('cases.index', ['locale' => 'en']))
             ->assertOk()
-            ->assertSee('Heart Surgery for a Sick Child')
-            ->assertDontSee('Persistent Campaign Must Stay Hidden');
-        $this->get(route('cases.show', ['locale' => 'en', 'id' => 1]))
+            ->assertSee('Published database Campaign')
+            ->assertDontSee('Heart Surgery for a Sick Child');
+        $this->get(route('cases.show', ['locale' => 'en', 'campaign' => $campaign->slug]))
             ->assertOk()
-            ->assertSee('Heart Surgery for a Sick Child')
-            ->assertDontSee('Persistent Campaign Must Stay Hidden');
+            ->assertSee('Published database Campaign')
+            ->assertDontSee('Heart Surgery for a Sick Child');
     }
 }

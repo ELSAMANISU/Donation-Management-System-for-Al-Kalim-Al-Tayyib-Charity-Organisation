@@ -8,6 +8,7 @@
         </div>
     </x-slot>
     <div class="py-12"><div class="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
+        @if (session('status') === 'campaign-published')<div role="status" class="rounded-md bg-green-50 p-4 text-sm text-green-800">{{ \App\Services\CampaignPublicationService::SUCCESS }}</div>@endif
         @if (session('status') === 'campaign-created')
             <div role="status" class="rounded-md bg-green-50 p-4 text-sm text-green-800">Campaign draft created successfully. It is not published. / <span lang="ar" dir="rtl">تم إنشاء مسودة الحملة بنجاح ولم يتم نشرها.</span></div>
         @endif

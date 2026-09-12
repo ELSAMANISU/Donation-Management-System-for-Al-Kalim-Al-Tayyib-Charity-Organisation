@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr" id="htmlRoot">
+<html lang="{{ $locale }}" dir="{{ $locale === 'ar' ? 'rtl' : 'ltr' }}" id="htmlRoot">
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -103,16 +103,6 @@
     }
     #mainNav.scrolled .nav-link { color: var(--navy) !important; }
     #mainNav .nav-link:hover { color: var(--accent) !important; background: rgba(242,124,49,0.08); }
-    .btn-donate-nav {
-      background: var(--accent) !important; color: var(--white) !important;
-      border-radius: 9px; padding: 8px 22px !important;
-      font-weight: 700; font-size: 0.88rem;
-      box-shadow: 0 4px 18px rgba(242,124,49,0.38); transition: all 0.25s !important;
-    }
-    .btn-donate-nav:hover {
-      background: var(--accent-dark) !important; transform: translateY(-2px);
-      box-shadow: 0 7px 24px rgba(242,124,49,0.48) !important;
-    }
     #mainNav .navbar-toggler { border: none; outline: none; box-shadow: none; }
     #mainNav .navbar-toggler-icon { filter: invert(1) brightness(2); }
     #mainNav.scrolled .navbar-toggler-icon { filter: none; }
@@ -126,7 +116,7 @@
     }
     #pageHeader .header-bg {
       position: absolute; inset: 0;
-      background-image: url('https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=1600&q=80');
+      background-color: var(--navy);
       background-size: cover; background-position: center;
       filter: brightness(0.38);
       transform: scale(1.04);
@@ -273,7 +263,7 @@
     .case-amounts .amount-item i { color: var(--primary); font-size: 0.7rem; }
     .case-amounts .amount-item strong { color: var(--navy); font-weight: 700; font-size: 0.83rem; }
 
-    .btn-donate {
+    .btn-details {
       display: block; width: 100%; text-align: center;
       background: var(--accent); color: var(--white) !important;
       border: none; border-radius: 11px;
@@ -283,7 +273,7 @@
       box-shadow: 0 4px 16px rgba(242,124,49,0.3);
       margin-top: auto;
     }
-    .btn-donate:hover {
+    .btn-details:hover {
       background: var(--accent-dark); transform: scale(1.03);
       box-shadow: 0 8px 26px rgba(242,124,49,0.45);
     }
@@ -406,448 +396,43 @@
     }
   </style>
 </head>
-
 <body>
-
-{{-- ═══════════ NAVBAR ═══════════ --}}
-<nav id="mainNav" class="navbar navbar-expand-lg">
-  <div class="container">
-
-    <a class="navbar-brand" href="{{ url('/') }}">
-      <span class="brand-main" data-en="Al-Kalimah Foundation" data-ar="مؤسسة الكلم الطيب">Al-Kalimah Foundation</span>
-      <span class="brand-sub" data-en="For Good &amp; Giving" data-ar="للخير والعطاء">For Good &amp; Giving</span>
-    </a>
-
-    <button class="navbar-toggler" type="button"
-            data-bs-toggle="collapse" data-bs-target="#navMain">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-
-    <div class="collapse navbar-collapse" id="navMain">
-      <ul class="navbar-nav mx-auto mb-2 mb-lg-0 gap-1">
-        <li class="nav-item">
-          <a class="nav-link" href="{{ url('/') }}"
-             data-en="Home" data-ar="الرئيسية">Home</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link active" href="#"
-             data-en="Donation Cases" data-ar="حالات التبرع">Donation Cases</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="{{ url('/') }}#services"
-             data-en="Services" data-ar="الخدمات">Services</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="{{ url('/') }}#impactAreas"
-             data-en="Impact Areas" data-ar="مجالات التأثير">Impact Areas</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="{{ url('/') }}#partners"
-             data-en="About Us" data-ar="عن المؤسسة">About Us</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="#"
-             data-en="Login" data-ar="تسجيل الدخول">Login</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="{{ route('register') }}"
-             data-en="Register" data-ar="إنشاء حساب">Register</a>
-        </li>
-      </ul>
-
-      <div class="d-flex align-items-center gap-3 mt-3 mt-lg-0">
-        <div class="lang-switcher">
-          <button class="lang-btn active" id="btnEN" onclick="setLang('en')">EN</button>
-          <button class="lang-btn" id="btnAR" onclick="setLang('ar')">عر</button>
-        </div>
-        <a href="#casesSection"
-           class="nav-link btn-donate-nav"
-           data-en="Donate Now ♥" data-ar="تبرع الآن ♥">Donate Now ♥</a>
-      </div>
-    </div>
-  </div>
+<nav class="navbar" aria-label="{{ $locale === 'ar' ? 'التنقل' : 'Navigation' }}"><div class="container">
+<a class="navbar-brand" href="{{ url('/') }}">{{ $locale === 'ar' ? 'مؤسسة الكلم الطيب' : 'Al-Kalimah Foundation' }}</a>
+<div><a href="{{ route('cases.index', array_filter(['locale'=>'en', 'category'=>$category?->slug])) }}" lang="en">English</a> | <a href="{{ route('cases.index', array_filter(['locale'=>'ar', 'category'=>$category?->slug])) }}" lang="ar">العربية</a></div>
+</div></nav>
+<main>
+<section id="pageHeader"><div class="header-bg" aria-hidden="true"></div><div class="header-overlay"></div><div class="header-content">
+<h1 class="header-title">{{ $category?->{'name_'.$locale} ?? ($locale === 'ar' ? 'الحملات المنشورة' : 'Published Campaigns') }}</h1>
+<p class="header-subtitle">{{ $locale === 'ar' ? 'ستتاح التبرعات قريباً' : 'Donations will be available soon' }}</p>
+</div></section>
+<section id="casesSection"><div class="container">
+<nav class="mb-5" aria-label="{{ $locale === 'ar' ? 'الفئات' : 'Categories' }}">
+<a href="{{ route('cases.index', ['locale'=>$locale]) }}">{{ $locale === 'ar' ? 'جميع الفئات' : 'All Categories' }}</a>
+@foreach($categories as $item)
+<a class="mx-2" href="{{ route('cases.index', ['locale'=>$locale, 'category'=>$item->slug]) }}" @if($category?->id === $item->id) aria-current="page" @endif>{{ $item->{'name_'.$locale} }}</a>
+@endforeach
 </nav>
-
-{{-- ═══════════ CINEMATIC PAGE HEADER ═══════════ --}}
-@php
-  $locale = app()->getLocale();
-
-  $categoryIcons = [
-    'health'    => 'fa-solid fa-heart-pulse',
-    'orphans'   => 'fa-solid fa-child-reaching',
-    'education' => 'fa-solid fa-graduation-cap',
-    'housing'   => 'fa-solid fa-house',
-    'water'     => 'fa-solid fa-droplet',
-    'mosques'   => 'fa-solid fa-mosque',
-  ];
-
-  $categoryNamesEn = [
-    'health'    => 'Healthcare',
-    'orphans'   => 'Orphan Care',
-    'education' => 'Education',
-    'housing'   => 'Housing',
-    'water'     => 'Clean Water',
-    'mosques'   => 'Mosques',
-  ];
-
-  $categoryNamesAr = [
-    'health'    => 'الرعاية الصحية',
-    'orphans'   => 'كفالة الأيتام',
-    'education' => 'التعليم',
-    'housing'   => 'الإسكان',
-    'water'     => 'المياه النظيفة',
-    'mosques'   => 'المساجد',
-  ];
-
-  $categoryBgs = [
-    'health'    => 'https://images.unsplash.com/photo-1584820927498-cfe5211fd8bf?w=1600&q=80',
-    'orphans'   => 'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=1600&q=80',
-    'education' => 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=1600&q=80',
-    'housing'   => 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=1600&q=80',
-    'water'     => 'https://images.unsplash.com/photo-1541544537156-7627a7a4aa1c?w=1600&q=80',
-    'mosques'   => 'https://images.unsplash.com/photo-1564769662533-4f00a87b4056?w=1600&q=80',
-  ];
-
-  $defaultBg  = 'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=1600&q=80';
-  $headerBg   = isset($category) && isset($categoryBgs[$category]) ? $categoryBgs[$category] : $defaultBg;
-  $headerIcon = isset($category) && isset($categoryIcons[$category]) ? $categoryIcons[$category] : 'fa-solid fa-hand-holding-heart';
-
-  $titleEn = isset($category) && isset($categoryNamesEn[$category])
-    ? $categoryNamesEn[$category] . ' Cases'
-    : 'All Donation Cases';
-
-  $titleAr = isset($category) && isset($categoryNamesAr[$category])
-    ? 'حالات ' . $categoryNamesAr[$category]
-    : 'جميع حالات التبرع';
-
-  $eyebrowEn = isset($category) ? ($categoryNamesEn[$category] ?? 'Donation Cases') : 'Donation Cases';
-  $eyebrowAr = isset($category) ? ($categoryNamesAr[$category] ?? 'حالات التبرع') : 'حالات التبرع';
-@endphp
-
-<section id="pageHeader">
-  <div class="header-bg" style="background-image: url('{{ $headerBg }}')"></div>
-  <div class="header-overlay"></div>
-  <div class="header-content">
-    <div class="header-eyebrow fade-up">
-      <i class="{{ $headerIcon }}"></i>
-      <span data-en="{{ $eyebrowEn }}" data-ar="{{ $eyebrowAr }}">{{ $eyebrowEn }}</span>
-    </div>
-    <h1 class="header-title fade-up delay-1"
-        data-en="{{ $titleEn }}"
-        data-ar="{{ $titleAr }}">{{ $titleEn }}</h1>
-    <p class="header-subtitle fade-up delay-2"
-       data-en="Every donation you make transforms a life. Browse our verified cases and choose where your contribution goes."
-       data-ar="كل تبرع تقدمه يغير حياة. تصفح حالاتنا الموثقة واختر أين تذهب مساهمتك.">
-      Every donation you make transforms a life. Browse our verified cases and choose where your contribution goes.
-    </p>
-    <nav class="header-breadcrumb fade-up delay-3" aria-label="breadcrumb">
-      <a href="{{ url('/') }}" data-en="Home" data-ar="الرئيسية">Home</a>
-      <i class="fa-solid fa-chevron-right"></i>
-      <span data-en="{{ $titleEn }}" data-ar="{{ $titleAr }}">{{ $titleEn }}</span>
-    </nav>
-  </div>
-</section>
-
-{{-- ═══════════ CASES GRID ═══════════ --}}
-<section id="casesSection">
-  <div class="container">
-
-    {{-- Section heading --}}
-    <div class="text-center mb-5 fade-up">
-      <p class="section-label"
-         data-en="Verified · Transparent · Impactful"
-         data-ar="موثقة · شفافة · مؤثرة">
-        Verified · Transparent · Impactful
-      </p>
-      <h2 class="section-title"
-          data-en="{{ $titleEn }}"
-          data-ar="{{ $titleAr }}">{{ $titleEn }}</h2>
-      <div class="section-divider"></div>
-      <p class="text-muted mt-2" style="font-size:0.92rem; max-width:540px; margin:0 auto;"
-         data-en="{{ $cases->count() }} cases need your support"
-         data-ar="{{ $cases->count() }} حالة تحتاج دعمك">
-        {{ $cases->count() }} cases need your support
-      </p>
-    </div>
-
-    @if($cases->isEmpty())
-      <div class="empty-state fade-up">
-        <i class="fa-solid fa-box-open"></i>
-        <h4 data-en="No cases found" data-ar="لا توجد حالات">No cases found</h4>
-        <p data-en="There are no donation cases in this category at the moment."
-           data-ar="لا توجد حالات تبرع في هذه الفئة في الوقت الحالي.">
-          There are no donation cases in this category at the moment.
-        </p>
-        <a href="{{ url('/') }}" class="btn-donate mt-4" style="display:inline-block; width:auto; padding:12px 34px;"
-           data-en="Back to Home" data-ar="العودة للرئيسية">Back to Home</a>
-      </div>
-    @else
-      <div class="row g-4">
-        @foreach($cases as $index => $case)
-          @php
-            $pct      = $case['goal'] > 0 ? round(($case['raised'] / $case['goal']) * 100) : 0;
-            $pct      = min($pct, 100);
-            $delayMap = ['', 'delay-1', 'delay-2', 'delay-3', 'delay-4', 'delay-5'];
-            $delay    = $delayMap[$index % 6] ?? '';
-
-            $catIconMap = [
-              'health'    => 'fa-heart-pulse',
-              'orphans'   => 'fa-child-reaching',
-              'education' => 'fa-graduation-cap',
-              'housing'   => 'fa-house',
-              'water'     => 'fa-droplet',
-              'mosques'   => 'fa-mosque',
-            ];
-            $catLabelEn = $categoryNamesEn[$case['category']] ?? ucfirst($case['category']);
-            $catLabelAr = $categoryNamesAr[$case['category']] ?? $case['category'];
-            $icon       = $catIconMap[$case['category']] ?? 'fa-hand-holding-heart';
-          @endphp
-          <div class="col-sm-6 col-lg-4">
-            <div class="case-card fade-up {{ $delay }}">
-
-              {{-- Image --}}
-              <a href="{{ route('cases.show', ['locale' => $locale, 'id' => $case['id']]) }}" class="case-img-wrap d-block">
-                <img src="{{ $case['image_url'] }}"
-                     alt="{{ $case['title_en'] }}"
-                     loading="lazy"/>
-                <span class="case-tag"
-                      data-en="{{ $catLabelEn }}"
-                      data-ar="{{ $catLabelAr }}">{{ $catLabelEn }}</span>
-                <div class="case-icon-badge">
-                  <i class="fa-solid {{ $icon }}"></i>
-                </div>
-              </a>
-
-              {{-- Body --}}
-              <div class="case-body">
-
-                <a href="{{ route('cases.show', ['locale' => $locale, 'id' => $case['id']]) }}"
-                   class="text-decoration-none">
-                  <h3 class="case-title"
-                      data-en="{{ $case['title_en'] }}"
-                      data-ar="{{ $case['title_ar'] }}">{{ $case['title_en'] }}</h3>
-                </a>
-
-                {{-- Progress --}}
-                <div class="progress-label">
-                  <span data-en="Raised" data-ar="تم جمع">Raised</span>
-                  <span class="pct">{{ $pct }}%</span>
-                </div>
-                <div class="progress">
-                  <div class="progress-bar"
-                       role="progressbar"
-                       style="width: 0%"
-                       data-target="{{ $pct }}"
-                       aria-valuenow="{{ $pct }}"
-                       aria-valuemin="0"
-                       aria-valuemax="100">
-                  </div>
-                </div>
-
-                {{-- Raised / Goal --}}
-                <div class="case-amounts">
-                  <div class="amount-item">
-                    <i class="fa-solid fa-arrow-trend-up"></i>
-                    <span data-en="Raised" data-ar="جُمع">Raised</span>
-                    <strong>{{ number_format($case['raised']) }} <span data-en="SAR" data-ar="ر.س">SAR</span></strong>
-                  </div>
-                  <div class="amount-item">
-                    <i class="fa-solid fa-bullseye"></i>
-                    <span data-en="Goal" data-ar="الهدف">Goal</span>
-                    <strong>{{ number_format($case['goal']) }} <span data-en="SAR" data-ar="ر.س">SAR</span></strong>
-                  </div>
-                </div>
-
-                {{-- Donate Button --}}
-                <a href="#"
-                   class="btn-donate"
-                   data-en="Donate Now ♥"
-                   data-ar="تبرع الآن ♥">Donate Now ♥</a>
-
-              </div>{{-- /.case-body --}}
-            </div>{{-- /.case-card --}}
-          </div>{{-- /.col --}}
-        @endforeach
-      </div>{{-- /.row --}}
-    @endif
-
-  </div>
-</section>
-
-{{-- ═══════════ FOOTER ═══════════ --}}
-<footer>
-  <div class="container">
-    <div class="row g-5">
-
-      <div class="col-lg-4">
-        <div class="footer-brand-main"
-             data-en="Al-Kalimah Foundation"
-             data-ar="مؤسسة الكلم الطيب">Al-Kalimah Foundation</div>
-        <div class="footer-brand-sub"
-             data-en="For Good &amp; Giving"
-             data-ar="للخير والعطاء">For Good &amp; Giving</div>
-        <p class="footer-about"
-           data-en="An Islamic charity foundation striving to alleviate suffering from the most vulnerable communities in Africa and beyond, through integrated and sustainable development projects."
-           data-ar="مؤسسة خيرية إسلامية تسعى لرفع المعاناة عن المجتمعات الأكثر احتياجاً في أفريقيا وخارجها، عبر مشاريع تنموية متكاملة ومستدامة">
-          An Islamic charity foundation striving to alleviate suffering from the most vulnerable communities in Africa and beyond, through integrated and sustainable development projects.
-        </p>
-        <div class="social-links">
-          <a href="#" class="social-btn" title="Twitter"><i class="fa-brands fa-x-twitter"></i></a>
-          <a href="#" class="social-btn" title="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
-          <a href="#" class="social-btn" title="Instagram"><i class="fa-brands fa-instagram"></i></a>
-          <a href="#" class="social-btn" title="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
-          <a href="#" class="social-btn" title="YouTube"><i class="fa-brands fa-youtube"></i></a>
-        </div>
-      </div>
-
-      <div class="col-6 col-lg-2">
-        <h6 class="footer-heading"
-            data-en="Quick Links"
-            data-ar="روابط سريعة">Quick Links</h6>
-        <ul class="footer-links">
-          <li><a href="{{ url('/') }}#" data-en="About Us" data-ar="من نحن"><i class="fa-solid fa-chevron-right"></i> About Us</a></li>
-          <li><a href="#casesSection" data-en="Donation Cases" data-ar="حالات التبرع"><i class="fa-solid fa-chevron-right"></i> Donation Cases</a></li>
-          <li><a href="{{ url('/') }}#services" data-en="Services" data-ar="الخدمات"><i class="fa-solid fa-chevron-right"></i> Services</a></li>
-          <li><a href="{{ url('/') }}#impactAreas" data-en="Our Projects" data-ar="مشاريعنا"><i class="fa-solid fa-chevron-right"></i> Our Projects</a></li>
-          <li><a href="#" data-en="News &amp; Reports" data-ar="أخبار وتقارير"><i class="fa-solid fa-chevron-right"></i> News &amp; Reports</a></li>
-        </ul>
-      </div>
-
-      <div class="col-6 col-lg-2">
-        <h6 class="footer-heading"
-            data-en="Help"
-            data-ar="المساعدة">Help</h6>
-        <ul class="footer-links">
-          <li><a href="#" data-en="FAQ" data-ar="الأسئلة الشائعة"><i class="fa-solid fa-chevron-right"></i> FAQ</a></li>
-          <li><a href="#" data-en="Privacy Policy" data-ar="سياسة الخصوصية"><i class="fa-solid fa-chevron-right"></i> Privacy Policy</a></li>
-          <li><a href="#" data-en="Terms &amp; Conditions" data-ar="الشروط والأحكام"><i class="fa-solid fa-chevron-right"></i> Terms &amp; Conditions</a></li>
-          <li><a href="#" data-en="Payment Methods" data-ar="طرق الدفع"><i class="fa-solid fa-chevron-right"></i> Payment Methods</a></li>
-          <li><a href="#" data-en="Contact Us" data-ar="اتصل بنا"><i class="fa-solid fa-chevron-right"></i> Contact Us</a></li>
-        </ul>
-      </div>
-
-      <div class="col-lg-4">
-        <h6 class="footer-heading"
-            data-en="Contact Us"
-            data-ar="تواصل معنا">Contact Us</h6>
-        <div class="footer-contact-item">
-          <i class="fa-solid fa-location-dot"></i>
-          <span data-en="Khartoum, Sudan — Riyadh, Saudi Arabia"
-                data-ar="الخرطوم، السودان — المملكة العربية السعودية، الرياض">
-            Khartoum, Sudan — Riyadh, Saudi Arabia
-          </span>
-        </div>
-        <div class="footer-contact-item">
-          <i class="fa-solid fa-phone"></i>
-          <span dir="ltr">+966 50 000 0000</span>
-        </div>
-        <div class="footer-contact-item">
-          <i class="fa-solid fa-envelope"></i>
-          <span>info@alkalimah.org</span>
-        </div>
-        <div style="margin-top:20px;">
-          <p style="font-size:0.8rem;color:rgba(255,255,255,0.42);margin-bottom:10px;"
-             data-en="Subscribe to our newsletter:"
-             data-ar="اشترك في نشرتنا البريدية:">Subscribe to our newsletter:</p>
-          <div style="display:flex;gap:8px;">
-            <input class="footer-newsletter-input" type="email"
-                   data-en-placeholder="Your email address"
-                   data-ar-placeholder="بريدك الإلكتروني"
-                   placeholder="Your email address"/>
-            <button class="footer-newsletter-btn"
-                    data-en="Subscribe"
-                    data-ar="اشتراك">Subscribe</button>
-          </div>
-        </div>
-      </div>
-
-    </div>
-
-    <div class="footer-bottom">
-      <p data-en="© 2025 Al-Kalimah Foundation. All Rights Reserved."
-         data-ar="© 2025 مؤسسة الكلم الطيب. جميع الحقوق محفوظة.">
-        © 2025 Al-Kalimah Foundation. All Rights Reserved.
-      </p>
-      <p>
-        <span data-en="Designed with" data-ar="صُمِّم بـ">Designed with</span>
-        <span style="color:var(--accent)"> ♥ </span>
-        <span data-en="for humanity —" data-ar="لخدمة الإنسانية —">for humanity —</span>
-        <a href="{{ url('/') }}" data-en="Al-Kalimah Foundation" data-ar="مؤسسة الكلم الطيب">Al-Kalimah Foundation</a>
-      </p>
-    </div>
-  </div>
-</footer>
-
-<button id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="Back to top">
-  <i class="fa-solid fa-chevron-up"></i>
-</button>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-const BOOTSTRAP_LTR = 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css';
-const BOOTSTRAP_RTL = 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css';
-
-let currentLang = localStorage.getItem('alkLang') || 'en';
-
-function setLang(lang) {
-  currentLang = lang;
-  localStorage.setItem('alkLang', lang);
-
-  const html   = document.getElementById('htmlRoot');
-  const bsCSS  = document.getElementById('bootstrapCSS');
-
-  html.setAttribute('lang', lang);
-  html.setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
-  bsCSS.href = lang === 'ar' ? BOOTSTRAP_RTL : BOOTSTRAP_LTR;
-
-  document.querySelectorAll('[data-en], [data-ar]').forEach(el => {
-    const val = el.getAttribute('data-' + lang);
-    if (val !== null) el.innerHTML = val;
-  });
-
-  document.querySelectorAll('[data-en-placeholder]').forEach(el => {
-    el.placeholder = el.getAttribute('data-' + lang + '-placeholder') || '';
-  });
-
-  document.getElementById('btnEN').classList.toggle('active', lang === 'en');
-  document.getElementById('btnAR').classList.toggle('active', lang === 'ar');
-
-  document.querySelectorAll('.footer-links a i').forEach(icon => {
-    icon.className = lang === 'ar' ? 'fa-solid fa-chevron-left' : 'fa-solid fa-chevron-right';
-  });
-
-  // Breadcrumb chevron direction
-  document.querySelectorAll('.header-breadcrumb i').forEach(icon => {
-    icon.className = lang === 'ar' ? 'fa-solid fa-chevron-left' : 'fa-solid fa-chevron-right';
-  });
-}
-
-// Navbar scroll
-const nav = document.getElementById('mainNav');
-window.addEventListener('scroll', () => {
-  nav.classList.toggle('scrolled', window.scrollY > 55);
-  document.getElementById('backToTop').classList.toggle('visible', window.scrollY > 420);
-}, { passive: true });
-
-// Scroll fade-in + progress bar animation
-const observer = new IntersectionObserver((entries) => {
-  entries.forEach(e => {
-    if (!e.isIntersecting) return;
-    e.target.classList.add('visible');
-    // Animate progress bar if inside this card
-    e.target.querySelectorAll('.progress-bar[data-target]').forEach(bar => {
-      bar.style.width = bar.dataset.target + '%';
-    });
-  });
-}, { threshold: 0.12 });
-
-document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
-
-// Apply language on load
-document.addEventListener('DOMContentLoaded', () => {
-  setTimeout(() => setLang(currentLang), 60);
-});
-</script>
-
-</body>
-</html>
+<div class="row g-4">
+@forelse($cases as $case)
+<div class="col-sm-6 col-lg-4"><article class="case-card">
+<a class="case-img-wrap d-block" href="{{ route('cases.show', ['locale'=>$locale, 'campaign'=>$case->slug]) }}"><img src="{{ route('cases.image', ['locale'=>$locale, 'campaign'=>$case->slug]) }}" alt="{{ $case->{'image_alt_'.$locale} }}" loading="lazy"><span class="case-tag">{{ $case->category->{'name_'.$locale} }}</span></a>
+<div class="case-body"><h2 class="case-title"><a href="{{ route('cases.show', ['locale'=>$locale, 'campaign'=>$case->slug]) }}">{{ $case->{'title_'.$locale} }}</a></h2>
+<p>{{ $case->{'summary_'.$locale} }}</p>
+@include('cases.progress')
+<a class="btn-details" href="{{ route('cases.show', ['locale'=>$locale, 'campaign'=>$case->slug]) }}">{{ $locale === 'ar' ? 'تفاصيل الحملة' : 'Campaign details' }}</a>
+</div></article></div>
+@empty
+<p role="status">{{ $locale === 'ar' ? 'لا توجد حملات منشورة في هذه الفئة حالياً.' : 'No published Campaigns in this Category at the moment.' }}</p>
+@endforelse
+</div>
+@if($cases->hasPages())
+<nav class="mt-4 d-flex justify-content-between" aria-label="{{ $locale === 'ar' ? 'صفحات الحملات' : 'Campaign pages' }}">
+@if($cases->previousPageUrl())<a rel="prev" href="{{ $cases->previousPageUrl() }}">{{ $locale === 'ar' ? 'السابق' : 'Previous' }}</a>@endif
+<span>{{ $cases->currentPage() }} / {{ $cases->lastPage() }}</span>
+@if($cases->nextPageUrl())<a rel="next" href="{{ $cases->nextPageUrl() }}">{{ $locale === 'ar' ? 'التالي' : 'Next' }}</a>@endif
+</nav>
+@endif
+</div></section>
+</main>
+</body></html>

@@ -325,7 +325,7 @@ class CampaignManagementTest extends TestCase
             ->assertSee('focus:ring-2', false);
     }
 
-    public function test_create_page_empty_state_navigation_and_public_prototype_isolation(): void
+    public function test_create_page_empty_state_navigation_and_published_database_display(): void
     {
         $admin = User::factory()->admin()->create();
         $this->actingAs($admin)->get(route('admin.campaigns.create'))->assertOk()->assertSee('No active categories are available')->assertDontSee('method="POST" action="'.route('admin.campaigns.store').'"', false);
@@ -333,7 +333,7 @@ class CampaignManagementTest extends TestCase
         $category = Category::factory()->create();
         $this->get(route('admin.campaigns.create'))->assertSee(route('admin.campaigns.store'))->assertDontSee('image_path')->assertDontSee('published_at');
         Campaign::factory()->active()->for($category)->create(['title_en' => 'Database campaign marker']);
-        $this->get(route('cases.index', ['locale' => 'en']))->assertDontSee('Database campaign marker');
+        $this->get(route('cases.index', ['locale' => 'en']))->assertSee('Database campaign marker');
     }
 
     /** @param array<string, mixed> $overrides */

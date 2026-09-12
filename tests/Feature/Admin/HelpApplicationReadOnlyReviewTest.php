@@ -55,7 +55,7 @@ class HelpApplicationReadOnlyReviewTest extends TestCase
         $this->assertSame('App\\Http\\Controllers\\Admin\\HelpApplicationController@show', $show->getActionName());
 
         $allRoutes = collect(app('router')->getRoutes())->values();
-        $publicWildcardPosition = $allRoutes->search(fn ($route) => $route->uri() === '{locale}/cases/{id}');
+        $publicWildcardPosition = $allRoutes->search(fn ($route) => $route->uri() === '{locale}/cases/{campaign}');
         $this->assertLessThan($publicWildcardPosition, $allRoutes->search(fn ($route) => $route->getName() === 'admin.help-applications.index'));
         $this->assertLessThan($publicWildcardPosition, $allRoutes->search(fn ($route) => $route->getName() === 'admin.help-applications.show'));
         $mutations = $allRoutes->filter(fn ($route) => str_starts_with($route->uri(), 'admin/help-applications')

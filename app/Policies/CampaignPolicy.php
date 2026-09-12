@@ -26,6 +26,11 @@ class CampaignPolicy
             && $campaign->status === CampaignStatus::Draft;
     }
 
+    public function publish(User $actor, Campaign $campaign): bool
+    {
+        return $this->isEligibleAdministrator($actor) && ! $campaign->trashed() && $campaign->getRawOriginal('status') === 'draft';
+    }
+
     private function isEligibleAdministrator(User $actor): bool
     {
         return $actor->is_active

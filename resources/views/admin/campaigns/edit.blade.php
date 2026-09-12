@@ -49,5 +49,6 @@
                 </form>
             @endif
         </section>
+        @include('admin.campaigns.publication')
     </div></div></div>
 </x-app-layout>

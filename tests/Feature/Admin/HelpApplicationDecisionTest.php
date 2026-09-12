@@ -483,7 +483,7 @@ class HelpApplicationDecisionTest extends TestCase
     {
         $payloads = app(InternalNotificationPayload::class);
         $reference = (string) Str::uuid();
-        foreach ([[InternalNotificationType::HelpApplicationApproved, 'approved'], [InternalNotificationType::HelpApplicationRejected, 'rejected'], [InternalNotificationType::HelpApplicationNewSubmission, 'pending'], [InternalNotificationType::HelpApplicationSubmissionConfirmation, 'pending']] as [$type, $expected]) {
+        foreach ([[InternalNotificationType::HelpApplicationCampaignActivated, 'campaign_active'], [InternalNotificationType::HelpApplicationApproved, 'approved'], [InternalNotificationType::HelpApplicationRejected, 'rejected'], [InternalNotificationType::HelpApplicationNewSubmission, 'pending'], [InternalNotificationType::HelpApplicationSubmissionConfirmation, 'pending']] as [$type, $expected]) {
             $this->assertSame(['application_reference' => $reference, 'status' => $expected], $payloads->build($type, $reference));
             foreach (['approved', 'rejected', 'pending'] as $status) {
                 if ($status === $expected) {
@@ -506,7 +506,7 @@ class HelpApplicationDecisionTest extends TestCase
             }
         }
         $keys = array_map(fn ($type) => app(InternalNotificationEventKey::class)->make($type, 42), InternalNotificationEventType::cases());
-        $this->assertCount(3, array_unique($keys));
+        $this->assertCount(4, array_unique($keys));
     }
 
     public function test_ready_form_has_one_csrf_form_blank_note_enabled_first_placeholder_and_no_initial_error_aria(): void

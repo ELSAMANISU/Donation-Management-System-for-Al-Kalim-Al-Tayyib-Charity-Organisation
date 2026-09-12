@@ -1,0 +1,4 @@
+@php $percentage = \App\Services\CampaignProgress::percentage($case->raised_amount, $case->target_amount); @endphp
+<div class="progress-label"><span>{{ $locale === 'ar' ? 'تقدم الحملة' : 'Campaign progress' }}</span><span>{{ $percentage }}%</span></div>
+<div class="progress"><div class="progress-bar" role="progressbar" aria-label="{{ $locale === 'ar' ? 'تقدم الحملة' : 'Campaign progress' }}" aria-valuenow="{{ $percentage }}" aria-valuemin="0" aria-valuemax="100" style="width: {{ $percentage }}%"></div></div>
+<div class="case-amounts"><p>{{ $locale === 'ar' ? 'تم جمع' : 'Raised' }}: <strong>{{ $case->raised_amount }} {{ $locale === 'ar' ? 'ج.س' : 'SDG' }}</strong></p><p>{{ $locale === 'ar' ? 'المبلغ المستهدف' : 'Target' }}: <strong>{{ $case->target_amount }} {{ $locale === 'ar' ? 'ج.س' : 'SDG' }}</strong></p></div>

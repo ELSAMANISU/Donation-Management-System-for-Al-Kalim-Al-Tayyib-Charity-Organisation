@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr" id="htmlRoot">
+<html lang="{{ $locale }}" dir="{{ $locale === 'ar' ? 'rtl' : 'ltr' }}" id="htmlRoot">
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>{{ $case['title_en'] }} — Al-Kalimah Foundation</title>
+  <title>{{ $case->{'title_'.$locale} }} — Al-Kalimah Foundation</title>
 
   <link id="bootstrapCSS"
         rel="stylesheet"
@@ -103,125 +103,136 @@
     }
     #mainNav.scrolled .nav-link { color: var(--navy) !important; }
     #mainNav .nav-link:hover { color: var(--accent) !important; background: rgba(242,124,49,0.08); }
-    .btn-donate-nav {
-      background: var(--accent) !important; color: var(--white) !important;
-      border-radius: 9px; padding: 8px 22px !important;
-      font-weight: 700; font-size: 0.88rem;
-      box-shadow: 0 4px 18px rgba(242,124,49,0.38); transition: all 0.25s !important;
-    }
-    .btn-donate-nav:hover {
-      background: var(--accent-dark) !important; transform: translateY(-2px);
-      box-shadow: 0 7px 24px rgba(242,124,49,0.48) !important;
-    }
     #mainNav .navbar-toggler { border: none; outline: none; box-shadow: none; }
     #mainNav .navbar-toggler-icon { filter: invert(1) brightness(2); }
     #mainNav.scrolled .navbar-toggler-icon { filter: none; }
 
-    /* ─── Hero ─── */
-    #caseHero {
+    /* ─── Cinematic Page Header ─── */
+    #pageHeader {
       position: relative;
       height: 55vh; min-height: 360px;
-      display: flex; align-items: flex-end;
+      display: flex; align-items: center; justify-content: center;
       overflow: hidden;
     }
-    #caseHero .hero-bg {
+    #pageHeader .header-bg {
       position: absolute; inset: 0;
+      background-color: var(--navy);
       background-size: cover; background-position: center;
       filter: brightness(0.38);
       transform: scale(1.04);
       transition: transform 8s ease;
     }
-    #caseHero:hover .hero-bg { transform: scale(1); }
-    #caseHero .hero-overlay {
+    #pageHeader:hover .header-bg { transform: scale(1); }
+    #pageHeader .header-overlay {
       position: absolute; inset: 0;
-      background: linear-gradient(0deg, rgba(13,43,69,0.88) 0%, rgba(13,43,69,0.25) 60%, transparent 100%);
+      background: linear-gradient(140deg, rgba(13,43,69,0.72) 0%, rgba(99,193,231,0.18) 100%);
     }
-    .hero-content {
+    .header-content {
       position: relative; z-index: 2;
-      padding: 40px 0 36px;
+      text-align: center; padding: 0 20px;
     }
-    .hero-eyebrow {
-      display: inline-flex; align-items: center; gap: 8px;
+    .header-eyebrow {
+      display: inline-flex; align-items: center; gap: 10px;
       background: rgba(99,193,231,0.15);
       border: 1px solid rgba(99,193,231,0.38);
-      color: #a8dff5; font-size: 0.72rem; font-weight: 700;
+      color: #a8dff5; font-size: 0.75rem; font-weight: 600;
       letter-spacing: 2.5px; text-transform: uppercase;
-      padding: 5px 18px; border-radius: 100px;
-      margin-bottom: 14px; backdrop-filter: blur(8px);
+      padding: 6px 22px; border-radius: 100px;
+      margin-bottom: 20px; backdrop-filter: blur(8px);
     }
-    html[lang="ar"] .hero-eyebrow { letter-spacing: 0; font-size: 0.82rem; }
-    .hero-eyebrow i { color: var(--accent); }
-    .hero-title {
+    html[lang="ar"] .header-eyebrow { letter-spacing: 0; font-size: 0.85rem; }
+    .header-eyebrow i { font-size: 0.85rem; color: var(--accent); }
+    .header-title {
       font-family: var(--font-display);
-      font-size: clamp(1.8rem, 4.5vw, 3.2rem);
+      font-size: clamp(2.2rem, 5.5vw, 4rem);
       color: var(--white); font-weight: 900; line-height: 1.25;
       text-shadow: 0 3px 24px rgba(0,0,0,0.32);
-      margin-bottom: 0;
+      margin-bottom: 14px;
     }
-    .hero-breadcrumb {
-      display: flex; align-items: center; gap: 8px; margin-top: 16px;
-      font-size: 0.78rem; color: rgba(255,255,255,0.5);
+    .header-subtitle {
+      font-size: clamp(0.9rem, 2vw, 1.08rem);
+      color: rgba(255,255,255,0.72); font-weight: 300; line-height: 1.7;
+      max-width: 560px; margin: 0 auto;
     }
-    .hero-breadcrumb a { color: var(--primary); transition: color 0.2s; }
-    .hero-breadcrumb a:hover { color: var(--accent); }
-    .hero-breadcrumb i { font-size: 0.6rem; }
+    .header-breadcrumb {
+      display: flex; align-items: center; justify-content: center;
+      gap: 8px; margin-top: 22px;
+      font-size: 0.8rem; color: rgba(255,255,255,0.5);
+    }
+    .header-breadcrumb a { color: var(--primary); transition: color 0.2s; }
+    .header-breadcrumb a:hover { color: var(--accent); }
+    .header-breadcrumb i { font-size: 0.6rem; }
 
-    /* ─── Content ─── */
-    #caseContent { padding: 60px 0 90px; background: var(--light-gray); }
-
-    .case-image-full {
-      border-radius: 20px; overflow: hidden;
-      box-shadow: 0 8px 40px rgba(0,0,0,0.12);
-      margin-bottom: 32px;
+    /* ─── Cases Section ─── */
+    #casesSection { padding: 72px 0 90px; background: var(--light-gray); }
+    .section-label {
+      font-size: 0.75rem; font-weight: 700; letter-spacing: 3px;
+      color: var(--primary-dark); text-transform: uppercase; margin-bottom: 6px;
     }
-    .case-image-full img {
-      width: 100%; height: 420px; object-fit: cover;
-      display: block;
+    html[lang="ar"] .section-label { letter-spacing: 0; font-size: 0.82rem; }
+    .section-title {
+      font-size: clamp(1.6rem, 3vw, 2.3rem); font-weight: 900;
+      color: var(--navy); margin-bottom: 6px;
     }
-
-    .case-story {
-      background: var(--white); border-radius: 20px;
-      padding: 36px 36px; box-shadow: 0 4px 24px rgba(0,0,0,0.06);
-      margin-bottom: 28px;
-    }
-    .story-label {
-      font-size: 0.72rem; font-weight: 700; letter-spacing: 3px;
-      color: var(--primary-dark); text-transform: uppercase; margin-bottom: 10px;
-    }
-    html[lang="ar"] .story-label { letter-spacing: 0; font-size: 0.8rem; }
-    .story-title {
-      font-size: clamp(1.5rem, 2.5vw, 2rem); font-weight: 900;
-      color: var(--navy); margin-bottom: 18px; line-height: 1.35;
-    }
-    .story-divider {
-      width: 48px; height: 4px;
+    .section-divider {
+      width: 52px; height: 4px;
       background: linear-gradient(90deg, var(--accent), var(--primary));
-      border-radius: 4px; margin-bottom: 22px;
-    }
-    .story-text {
-      font-size: 1.02rem; color: var(--text-dark);
-      line-height: 1.9; font-weight: 400;
+      border-radius: 4px; margin: 0 auto 14px;
     }
 
-    /* ─── Stats sidebar ─── */
-    .case-stats {
-      background: var(--white); border-radius: 20px;
-      padding: 30px 28px; box-shadow: 0 4px 24px rgba(0,0,0,0.06);
-      position: sticky; top: 100px;
+    /* ─── Case Card ─── */
+    .case-card {
+      background: var(--white); border-radius: 20px; overflow: hidden;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.07);
+      transition: transform 0.35s cubic-bezier(0.25,0.46,0.45,0.94), box-shadow 0.35s;
+      height: 100%; display: flex; flex-direction: column;
     }
-    .stats-title {
-      font-size: 1rem; font-weight: 800; color: var(--navy);
-      margin-bottom: 20px; padding-bottom: 14px;
-      border-bottom: 2px solid var(--mid-gray);
+    .case-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 18px 48px rgba(0,0,0,0.14);
     }
+    .case-img-wrap {
+      position: relative; height: 210px; overflow: hidden; flex-shrink: 0;
+    }
+    .case-img-wrap img {
+      width: 100%; height: 100%; object-fit: cover;
+      transition: transform 0.55s ease;
+    }
+    .case-card:hover .case-img-wrap img { transform: scale(1.08); }
+    .case-tag {
+      position: absolute; top: 14px; right: 14px;
+      background: var(--primary); color: var(--white);
+      font-size: 0.7rem; font-weight: 700;
+      padding: 4px 14px; border-radius: 100px;
+      letter-spacing: 0.4px; backdrop-filter: blur(4px);
+    }
+    html[dir="ltr"] .case-tag { right: auto; left: 14px; }
+    .case-icon-badge {
+      position: absolute; bottom: -22px; right: 18px;
+      width: 46px; height: 46px; background: var(--accent);
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      color: var(--white); font-size: 1.1rem;
+      box-shadow: 0 4px 16px rgba(242,124,49,0.45); z-index: 2;
+    }
+    html[dir="ltr"] .case-icon-badge { right: auto; left: 18px; }
+    .case-body {
+      padding: 32px 20px 22px; flex: 1;
+      display: flex; flex-direction: column;
+    }
+    .case-title {
+      font-size: 1.01rem; font-weight: 700;
+      color: var(--navy); margin-bottom: 14px; line-height: 1.5;
+    }
+
+    /* Progress bar */
     .progress-label {
       display: flex; justify-content: space-between;
       font-size: 0.73rem; color: var(--text-muted); margin-bottom: 6px;
     }
     .progress-label .pct { color: var(--accent); font-weight: 800; font-size: 0.8rem; }
     .progress {
-      height: 10px; border-radius: 10px;
-      background: var(--mid-gray); margin-bottom: 20px; overflow: visible;
+      height: 8px; border-radius: 10px;
+      background: var(--mid-gray); margin-bottom: 16px; overflow: visible;
     }
     .progress-bar {
       background: linear-gradient(90deg, var(--accent), #f5a55a);
@@ -233,96 +244,47 @@
       position: absolute; top: 50%;
       left: -6px;
       transform: translateY(-50%);
-      width: 18px; height: 18px;
+      width: 16px; height: 16px;
       background: var(--accent); border-radius: 50%;
-      border: 3px solid var(--white);
+      border: 2.5px solid var(--white);
       box-shadow: 0 0 0 3px rgba(242,124,49,0.22);
     }
     html[dir="ltr"] .progress-bar::after { left: auto; right: -6px; }
 
-    .stat-item {
-      display: flex; align-items: center; gap: 12px;
-      padding: 14px 0; border-bottom: 1px solid var(--mid-gray);
+    /* Raised / Goal */
+    .case-amounts {
+      display: flex; gap: 10px;
+      font-size: 0.75rem; color: var(--text-muted);
+      margin-bottom: 18px; flex-wrap: wrap;
     }
-    .stat-item:last-of-type { border-bottom: none; }
-    .stat-icon {
-      width: 42px; height: 42px; border-radius: 11px;
-      background: rgba(99,193,231,0.1);
-      display: flex; align-items: center; justify-content: center;
-      color: var(--primary); font-size: 1rem; flex-shrink: 0;
+    .case-amounts .amount-item {
+      display: flex; align-items: center; gap: 5px;
     }
-    .stat-label { font-size: 0.72rem; color: var(--text-muted); margin-bottom: 2px; }
-    .stat-value { font-size: 1rem; font-weight: 800; color: var(--navy); }
+    .case-amounts .amount-item i { color: var(--primary); font-size: 0.7rem; }
+    .case-amounts .amount-item strong { color: var(--navy); font-weight: 700; font-size: 0.83rem; }
 
-    .btn-donate-full {
+    .btn-details {
       display: block; width: 100%; text-align: center;
       background: var(--accent); color: var(--white) !important;
-      border: none; border-radius: 13px;
-      padding: 15px 20px; margin-top: 20px;
-      font-family: var(--font-main); font-weight: 700; font-size: 1rem;
+      border: none; border-radius: 11px;
+      padding: 11px 20px;
+      font-family: var(--font-main); font-weight: 700; font-size: 0.88rem;
       cursor: pointer; transition: all 0.28s;
-      box-shadow: 0 6px 22px rgba(242,124,49,0.35);
+      box-shadow: 0 4px 16px rgba(242,124,49,0.3);
+      margin-top: auto;
     }
-    .btn-donate-full:hover {
-      background: var(--accent-dark); transform: translateY(-2px);
-      box-shadow: 0 10px 30px rgba(242,124,49,0.48);
-    }
-
-    /* ─── Donation Amount Selector ─── */
-    .donate-label {
-      font-size: 0.72rem; font-weight: 700; letter-spacing: 2px;
-      color: var(--text-muted); text-transform: uppercase;
-      margin-bottom: 10px; display: block;
-    }
-    html[lang="ar"] .donate-label { letter-spacing: 0; font-size: 0.8rem; }
-    .amount-btns {
-      display: flex; gap: 8px; margin-bottom: 12px;
-    }
-    .amount-btn {
-      flex: 1; padding: 9px 6px;
-      background: var(--white); color: var(--navy);
-      border: 2px solid var(--mid-gray); border-radius: 10px;
-      font-family: var(--font-main); font-weight: 700; font-size: 0.9rem;
-      cursor: pointer; transition: all 0.22s; text-align: center;
-    }
-    .amount-btn:hover {
-      border-color: var(--accent); color: var(--accent);
-    }
-    .amount-btn.active {
-      border-color: var(--accent); background: var(--accent);
-      color: var(--white); box-shadow: 0 4px 14px rgba(242,124,49,0.32);
-    }
-    .custom-amount-wrap {
-      position: relative; margin-bottom: 4px;
-    }
-    .custom-amount-wrap .currency-badge {
-      position: absolute; top: 50%; transform: translateY(-50%);
-      font-size: 0.75rem; font-weight: 700;
-      color: var(--text-muted); pointer-events: none;
-    }
-    html[dir="ltr"] .custom-amount-wrap .currency-badge { right: 14px; }
-    html[dir="rtl"] .custom-amount-wrap .currency-badge { left: 14px; }
-    .custom-amount-input {
-      width: 100%; border: 2px solid var(--mid-gray); border-radius: 10px;
-      padding: 10px 50px 10px 14px;
-      font-family: var(--font-main); font-size: 0.95rem; font-weight: 600;
-      color: var(--navy); outline: none; transition: border 0.22s;
-      background: var(--white);
-    }
-    html[dir="rtl"] .custom-amount-input { padding: 10px 14px 10px 50px; }
-    .custom-amount-input:focus { border-color: var(--accent); }
-    .custom-amount-input.is-invalid { border-color: #e53e3e; }
-    .donate-error {
-      font-size: 0.76rem; color: #e53e3e; font-weight: 600;
-      margin-top: 6px; display: none;
+    .btn-details:hover {
+      background: var(--accent-dark); transform: scale(1.03);
+      box-shadow: 0 8px 26px rgba(242,124,49,0.45);
     }
 
-    .btn-back {
-      display: inline-flex; align-items: center; gap: 8px;
-      color: var(--primary-dark); font-weight: 600; font-size: 0.88rem;
-      margin-bottom: 28px; transition: gap 0.2s, color 0.2s;
+    /* Empty state */
+    .empty-state {
+      text-align: center; padding: 80px 20px;
     }
-    .btn-back:hover { color: var(--accent); gap: 12px; }
+    .empty-state i { font-size: 3.5rem; color: var(--mid-gray); margin-bottom: 18px; display: block; }
+    .empty-state h4 { color: var(--navy); margin-bottom: 10px; }
+    .empty-state p { color: var(--text-muted); font-size: 0.9rem; }
 
     /* ─── Footer ─── */
     footer {
@@ -421,475 +383,32 @@
     .delay-1 { transition-delay: 0.1s; }
     .delay-2 { transition-delay: 0.2s; }
     .delay-3 { transition-delay: 0.3s; }
+    .delay-4 { transition-delay: 0.4s; }
+    .delay-5 { transition-delay: 0.5s; }
+    .delay-6 { transition-delay: 0.6s; }
 
+    /* ─── Responsive ─── */
     @media (max-width: 767px) {
-      #caseHero { height: 46vh; min-height: 300px; }
-      .case-image-full img { height: 260px; }
-      .case-story { padding: 24px 20px; }
-      .case-stats { position: static; margin-top: 28px; }
+      #pageHeader { height: 46vh; min-height: 300px; }
       .footer-bottom { flex-direction: column; text-align: center; }
       .footer-about { max-width: 100%; }
       .footer-heading::after { display: none; }
     }
   </style>
 </head>
-
 <body>
-
-@php
-  $locale = app()->getLocale();
-
-  $categoryIcons = [
-    'health'    => 'fa-solid fa-heart-pulse',
-    'orphans'   => 'fa-solid fa-child-reaching',
-    'education' => 'fa-solid fa-graduation-cap',
-    'housing'   => 'fa-solid fa-house',
-    'water'     => 'fa-solid fa-droplet',
-    'mosques'   => 'fa-solid fa-mosque',
-  ];
-  $categoryNamesEn = [
-    'health'    => 'Healthcare',
-    'orphans'   => 'Orphan Care',
-    'education' => 'Education',
-    'housing'   => 'Housing',
-    'water'     => 'Clean Water',
-    'mosques'   => 'Mosques',
-  ];
-  $categoryNamesAr = [
-    'health'    => 'الرعاية الصحية',
-    'orphans'   => 'كفالة الأيتام',
-    'education' => 'التعليم',
-    'housing'   => 'الإسكان',
-    'water'     => 'المياه النظيفة',
-    'mosques'   => 'المساجد',
-  ];
-
-  $catIcon    = $categoryIcons[$case['category']]    ?? 'fa-solid fa-hand-holding-heart';
-  $catLabelEn = $categoryNamesEn[$case['category']]  ?? ucfirst($case['category']);
-  $catLabelAr = $categoryNamesAr[$case['category']]  ?? $case['category'];
-
-  $pct = $case['goal'] > 0 ? min(round(($case['raised'] / $case['goal']) * 100), 100) : 0;
-@endphp
-
-{{-- ═══════════ NAVBAR ═══════════ --}}
-<nav id="mainNav" class="navbar navbar-expand-lg">
-  <div class="container">
-
-    <a class="navbar-brand" href="{{ url('/') }}">
-      <span class="brand-main" data-en="Al-Kalimah Foundation" data-ar="مؤسسة الكلم الطيب">Al-Kalimah Foundation</span>
-      <span class="brand-sub" data-en="For Good &amp; Giving" data-ar="للخير والعطاء">For Good &amp; Giving</span>
-    </a>
-
-    <button class="navbar-toggler" type="button"
-            data-bs-toggle="collapse" data-bs-target="#navMain">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-
-    <div class="collapse navbar-collapse" id="navMain">
-      <ul class="navbar-nav mx-auto mb-2 mb-lg-0 gap-1">
-        <li class="nav-item">
-          <a class="nav-link" href="{{ url('/') }}"
-             data-en="Home" data-ar="الرئيسية">Home</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link active" href="{{ route('cases.index', ['locale' => $locale]) }}"
-             data-en="Donation Cases" data-ar="حالات التبرع">Donation Cases</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="{{ url('/') }}#services"
-             data-en="Services" data-ar="الخدمات">Services</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="{{ url('/') }}#impactAreas"
-             data-en="Impact Areas" data-ar="مجالات التأثير">Impact Areas</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="{{ url('/') }}#partners"
-             data-en="About Us" data-ar="عن المؤسسة">About Us</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="#"
-             data-en="Login" data-ar="تسجيل الدخول">Login</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="{{ route('register') }}"
-             data-en="Register" data-ar="إنشاء حساب">Register</a>
-        </li>
-      </ul>
-
-      <div class="d-flex align-items-center gap-3 mt-3 mt-lg-0">
-        <div class="lang-switcher">
-          <button class="lang-btn active" id="btnEN" onclick="setLang('en')">EN</button>
-          <button class="lang-btn" id="btnAR" onclick="setLang('ar')">عر</button>
-        </div>
-        <a href="#donateBox"
-           class="nav-link btn-donate-nav"
-           data-en="Donate Now ♥" data-ar="تبرع الآن ♥">Donate Now ♥</a>
-      </div>
-    </div>
-  </div>
-</nav>
-
-{{-- ═══════════ CASE HERO ═══════════ --}}
-<section id="caseHero">
-  <div class="hero-bg" style="background-image: url('{{ $case['image_url'] }}')"></div>
-  <div class="hero-overlay"></div>
-  <div class="container w-100">
-    <div class="hero-content fade-up">
-      <div class="hero-eyebrow">
-        <i class="{{ $catIcon }}"></i>
-        <span data-en="{{ $catLabelEn }}" data-ar="{{ $catLabelAr }}">{{ $catLabelEn }}</span>
-      </div>
-      <h1 class="hero-title"
-          data-en="{{ $case['title_en'] }}"
-          data-ar="{{ $case['title_ar'] }}">{{ $case['title_en'] }}</h1>
-      <nav class="hero-breadcrumb fade-up delay-1" aria-label="breadcrumb">
-        <a href="{{ url('/') }}" data-en="Home" data-ar="الرئيسية">Home</a>
-        <i class="fa-solid fa-chevron-right"></i>
-        <a href="{{ route('cases.index', ['locale' => $locale]) }}"
-           data-en="Donation Cases" data-ar="حالات التبرع">Donation Cases</a>
-        <i class="fa-solid fa-chevron-right"></i>
-        <span data-en="{{ $case['title_en'] }}" data-ar="{{ $case['title_ar'] }}">{{ $case['title_en'] }}</span>
-      </nav>
-    </div>
-  </div>
-</section>
-
-{{-- ═══════════ CASE CONTENT ═══════════ --}}
-<section id="caseContent">
-  <div class="container">
-
-    <a href="{{ route('cases.index', ['locale' => $locale]) }}"
-       class="btn-back fade-up">
-      <i class="fa-solid fa-arrow-right" id="backArrowIcon"></i>
-      <span data-en="Back to All Cases" data-ar="العودة لجميع الحالات">Back to All Cases</span>
-    </a>
-
-    <div class="row g-4">
-
-      {{-- Story Column --}}
-      <div class="col-lg-8">
-
-        <div class="case-image-full fade-up">
-          <img src="{{ $case['image_url'] }}" alt="{{ $case['title_en'] }}"/>
-        </div>
-
-        <div class="case-story fade-up delay-1">
-          <p class="story-label"
-             data-en="Case Story" data-ar="قصة الحالة">Case Story</p>
-          <h2 class="story-title"
-              data-en="{{ $case['title_en'] }}"
-              data-ar="{{ $case['title_ar'] }}">{{ $case['title_en'] }}</h2>
-          <div class="story-divider"></div>
-          <p class="story-text"
-             data-en="{{ $case['description_en'] }}"
-             data-ar="{{ $case['description_ar'] }}">{{ $case['description_en'] }}</p>
-        </div>
-
-      </div>
-
-      {{-- Stats Sidebar --}}
-      <div class="col-lg-4">
-        <div class="case-stats fade-up delay-2" id="donateBox">
-
-          <p class="stats-title"
-             data-en="Campaign Progress" data-ar="تقدم الحملة">Campaign Progress</p>
-
-          <div class="progress-label">
-            <span data-en="Raised so far" data-ar="تم جمعه حتى الآن">Raised so far</span>
-            <span class="pct">{{ $pct }}%</span>
-          </div>
-          <div class="progress">
-            <div class="progress-bar"
-                 role="progressbar"
-                 style="width: 0%"
-                 data-target="{{ $pct }}"
-                 aria-valuenow="{{ $pct }}"
-                 aria-valuemin="0"
-                 aria-valuemax="100">
-            </div>
-          </div>
-
-          <div class="stat-item">
-            <div class="stat-icon"><i class="fa-solid fa-arrow-trend-up"></i></div>
-            <div>
-              <div class="stat-label" data-en="Total Raised" data-ar="إجمالي المُجمَّع">Total Raised</div>
-              <div class="stat-value">{{ number_format($case['raised']) }} <span data-en="SAR" data-ar="ر.س">SAR</span></div>
-            </div>
-          </div>
-
-          <div class="stat-item">
-            <div class="stat-icon"><i class="fa-solid fa-bullseye"></i></div>
-            <div>
-              <div class="stat-label" data-en="Fundraising Goal" data-ar="هدف الحملة">Fundraising Goal</div>
-              <div class="stat-value">{{ number_format($case['goal']) }} <span data-en="SAR" data-ar="ر.س">SAR</span></div>
-            </div>
-          </div>
-
-          <div class="stat-item">
-            <div class="stat-icon"><i class="fa-solid fa-sack-dollar"></i></div>
-            <div>
-              <div class="stat-label" data-en="Still Needed" data-ar="المبلغ المتبقي">Still Needed</div>
-              <div class="stat-value">{{ number_format(max($case['goal'] - $case['raised'], 0)) }} <span data-en="SAR" data-ar="ر.س">SAR</span></div>
-            </div>
-          </div>
-
-          {{-- ── Donation Amount Selector ── --}}
-          <form id="donateForm" onsubmit="return handleDonate(event)" novalidate style="margin-top:20px;">
-            <span class="donate-label"
-                  data-en="Select Amount (SAR)"
-                  data-ar="اختر المبلغ (ر.س)">Select Amount (SAR)</span>
-
-            <div class="amount-btns">
-              <button type="button" class="amount-btn" data-amount="10">10</button>
-              <button type="button" class="amount-btn" data-amount="50">50</button>
-              <button type="button" class="amount-btn" data-amount="100">100</button>
-            </div>
-
-            <div class="custom-amount-wrap">
-              <input id="custom_amount" class="custom-amount-input"
-                     type="number" min="1" step="any"
-                     data-en-placeholder="Or enter custom amount"
-                     data-ar-placeholder="أو أدخل مبلغاً آخر"
-                     placeholder="Or enter custom amount"/>
-              <span class="currency-badge"
-                    data-en="SAR" data-ar="ر.س">SAR</span>
-            </div>
-            <div class="donate-error" id="donateError"
-                 data-en="Please enter a valid donation amount."
-                 data-ar="يرجى إدخال مبلغ تبرع صحيح.">
-              Please enter a valid donation amount.
-            </div>
-
-            <button type="submit"
-                    class="btn-donate-full"
-                    data-en="Donate Now ♥"
-                    data-ar="تبرع الآن ♥">Donate Now ♥</button>
-          </form>
-
-        </div>
-      </div>
-
-    </div>
-  </div>
-</section>
-
-{{-- ═══════════ FOOTER ═══════════ --}}
-<footer>
-  <div class="container">
-    <div class="row g-5">
-
-      <div class="col-lg-4">
-        <div class="footer-brand-main"
-             data-en="Al-Kalimah Foundation"
-             data-ar="مؤسسة الكلم الطيب">Al-Kalimah Foundation</div>
-        <div class="footer-brand-sub"
-             data-en="For Good &amp; Giving"
-             data-ar="للخير والعطاء">For Good &amp; Giving</div>
-        <p class="footer-about"
-           data-en="An Islamic charity foundation striving to alleviate suffering from the most vulnerable communities in Africa and beyond, through integrated and sustainable development projects."
-           data-ar="مؤسسة خيرية إسلامية تسعى لرفع المعاناة عن المجتمعات الأكثر احتياجاً في أفريقيا وخارجها، عبر مشاريع تنموية متكاملة ومستدامة">
-          An Islamic charity foundation striving to alleviate suffering from the most vulnerable communities in Africa and beyond, through integrated and sustainable development projects.
-        </p>
-        <div class="social-links">
-          <a href="#" class="social-btn" title="Twitter"><i class="fa-brands fa-x-twitter"></i></a>
-          <a href="#" class="social-btn" title="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
-          <a href="#" class="social-btn" title="Instagram"><i class="fa-brands fa-instagram"></i></a>
-          <a href="#" class="social-btn" title="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
-          <a href="#" class="social-btn" title="YouTube"><i class="fa-brands fa-youtube"></i></a>
-        </div>
-      </div>
-
-      <div class="col-6 col-lg-2">
-        <h6 class="footer-heading"
-            data-en="Quick Links"
-            data-ar="روابط سريعة">Quick Links</h6>
-        <ul class="footer-links">
-          <li><a href="{{ url('/') }}#" data-en="About Us" data-ar="من نحن"><i class="fa-solid fa-chevron-right"></i> About Us</a></li>
-          <li><a href="{{ route('cases.index', ['locale' => $locale]) }}" data-en="Donation Cases" data-ar="حالات التبرع"><i class="fa-solid fa-chevron-right"></i> Donation Cases</a></li>
-          <li><a href="{{ url('/') }}#services" data-en="Services" data-ar="الخدمات"><i class="fa-solid fa-chevron-right"></i> Services</a></li>
-          <li><a href="{{ url('/') }}#impactAreas" data-en="Our Projects" data-ar="مشاريعنا"><i class="fa-solid fa-chevron-right"></i> Our Projects</a></li>
-          <li><a href="#" data-en="News &amp; Reports" data-ar="أخبار وتقارير"><i class="fa-solid fa-chevron-right"></i> News &amp; Reports</a></li>
-        </ul>
-      </div>
-
-      <div class="col-6 col-lg-2">
-        <h6 class="footer-heading"
-            data-en="Help"
-            data-ar="المساعدة">Help</h6>
-        <ul class="footer-links">
-          <li><a href="#" data-en="FAQ" data-ar="الأسئلة الشائعة"><i class="fa-solid fa-chevron-right"></i> FAQ</a></li>
-          <li><a href="#" data-en="Privacy Policy" data-ar="سياسة الخصوصية"><i class="fa-solid fa-chevron-right"></i> Privacy Policy</a></li>
-          <li><a href="#" data-en="Terms &amp; Conditions" data-ar="الشروط والأحكام"><i class="fa-solid fa-chevron-right"></i> Terms &amp; Conditions</a></li>
-          <li><a href="#" data-en="Payment Methods" data-ar="طرق الدفع"><i class="fa-solid fa-chevron-right"></i> Payment Methods</a></li>
-          <li><a href="#" data-en="Contact Us" data-ar="اتصل بنا"><i class="fa-solid fa-chevron-right"></i> Contact Us</a></li>
-        </ul>
-      </div>
-
-      <div class="col-lg-4">
-        <h6 class="footer-heading"
-            data-en="Contact Us"
-            data-ar="تواصل معنا">Contact Us</h6>
-        <div class="footer-contact-item">
-          <i class="fa-solid fa-location-dot"></i>
-          <span data-en="Khartoum, Sudan — Riyadh, Saudi Arabia"
-                data-ar="الخرطوم، السودان — المملكة العربية السعودية، الرياض">
-            Khartoum, Sudan — Riyadh, Saudi Arabia
-          </span>
-        </div>
-        <div class="footer-contact-item">
-          <i class="fa-solid fa-phone"></i>
-          <span dir="ltr">+966 50 000 0000</span>
-        </div>
-        <div class="footer-contact-item">
-          <i class="fa-solid fa-envelope"></i>
-          <span>info@alkalimah.org</span>
-        </div>
-        <div style="margin-top:20px;">
-          <p style="font-size:0.8rem;color:rgba(255,255,255,0.42);margin-bottom:10px;"
-             data-en="Subscribe to our newsletter:"
-             data-ar="اشترك في نشرتنا البريدية:">Subscribe to our newsletter:</p>
-          <div style="display:flex;gap:8px;">
-            <input class="footer-newsletter-input" type="email"
-                   data-en-placeholder="Your email address"
-                   data-ar-placeholder="بريدك الإلكتروني"
-                   placeholder="Your email address"/>
-            <button class="footer-newsletter-btn"
-                    data-en="Subscribe"
-                    data-ar="اشتراك">Subscribe</button>
-          </div>
-        </div>
-      </div>
-
-    </div>
-
-    <div class="footer-bottom">
-      <p data-en="© 2025 Al-Kalimah Foundation. All Rights Reserved."
-         data-ar="© 2025 مؤسسة الكلم الطيب. جميع الحقوق محفوظة.">
-        © 2025 Al-Kalimah Foundation. All Rights Reserved.
-      </p>
-      <p>
-        <span data-en="Designed with" data-ar="صُمِّم بـ">Designed with</span>
-        <span style="color:var(--accent)"> ♥ </span>
-        <span data-en="for humanity —" data-ar="لخدمة الإنسانية —">for humanity —</span>
-        <a href="{{ url('/') }}" data-en="Al-Kalimah Foundation" data-ar="مؤسسة الكلم الطيب">Al-Kalimah Foundation</a>
-      </p>
-    </div>
-  </div>
-</footer>
-
-<button id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="Back to top">
-  <i class="fa-solid fa-chevron-up"></i>
-</button>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-const BOOTSTRAP_LTR = 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css';
-const BOOTSTRAP_RTL = 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css';
-
-let currentLang = localStorage.getItem('alkLang') || 'en';
-
-function setLang(lang) {
-  currentLang = lang;
-  localStorage.setItem('alkLang', lang);
-
-  const html  = document.getElementById('htmlRoot');
-  const bsCSS = document.getElementById('bootstrapCSS');
-
-  html.setAttribute('lang', lang);
-  html.setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
-  bsCSS.href = lang === 'ar' ? BOOTSTRAP_RTL : BOOTSTRAP_LTR;
-
-  document.querySelectorAll('[data-en], [data-ar]').forEach(el => {
-    const val = el.getAttribute('data-' + lang);
-    if (val !== null) el.innerHTML = val;
-  });
-
-  document.querySelectorAll('[data-en-placeholder]').forEach(el => {
-    el.placeholder = el.getAttribute('data-' + lang + '-placeholder') || '';
-  });
-
-  document.getElementById('btnEN').classList.toggle('active', lang === 'en');
-  document.getElementById('btnAR').classList.toggle('active', lang === 'ar');
-
-  // flip back-arrow direction
-  const backArrow = document.getElementById('backArrowIcon');
-  if (backArrow) {
-    backArrow.className = lang === 'ar' ? 'fa-solid fa-arrow-left' : 'fa-solid fa-arrow-right';
-  }
-
-  document.querySelectorAll('.footer-links a i').forEach(icon => {
-    icon.className = lang === 'ar' ? 'fa-solid fa-chevron-left' : 'fa-solid fa-chevron-right';
-  });
-
-  document.querySelectorAll('.hero-breadcrumb i').forEach(icon => {
-    icon.className = lang === 'ar' ? 'fa-solid fa-chevron-left' : 'fa-solid fa-chevron-right';
-  });
-}
-
-// Navbar scroll
-const nav = document.getElementById('mainNav');
-window.addEventListener('scroll', () => {
-  nav.classList.toggle('scrolled', window.scrollY > 55);
-  document.getElementById('backToTop').classList.toggle('visible', window.scrollY > 420);
-}, { passive: true });
-
-// Scroll fade-in + progress bar animation
-const observer = new IntersectionObserver((entries) => {
-  entries.forEach(e => {
-    if (!e.isIntersecting) return;
-    e.target.classList.add('visible');
-    e.target.querySelectorAll('.progress-bar[data-target]').forEach(bar => {
-      bar.style.width = bar.dataset.target + '%';
-    });
-  });
-}, { threshold: 0.12 });
-
-document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
-
-document.addEventListener('DOMContentLoaded', () => {
-  setTimeout(() => setLang(currentLang), 60);
-
-  // ── Donation amount selector ──
-  const amountBtns  = document.querySelectorAll('.amount-btn');
-  const amountInput = document.getElementById('custom_amount');
-  const donateError = document.getElementById('donateError');
-
-  amountBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-      amountBtns.forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      amountInput.value = btn.dataset.amount;
-      amountInput.classList.remove('is-invalid');
-      donateError.style.display = 'none';
-    });
-  });
-
-  amountInput.addEventListener('input', () => {
-    amountBtns.forEach(b => b.classList.remove('active'));
-    amountInput.classList.remove('is-invalid');
-    donateError.style.display = 'none';
-  });
-});
-
-function handleDonate(e) {
-  e.preventDefault();
-  const amountInput = document.getElementById('custom_amount');
-  const donateError = document.getElementById('donateError');
-  const val = parseFloat(amountInput.value);
-
-  if (!amountInput.value.trim() || isNaN(val) || val <= 0) {
-    amountInput.classList.add('is-invalid');
-    donateError.style.display = 'block';
-    amountInput.focus();
-    return false;
-  }
-
-  // Amount is valid — proceed (replace with real payment logic)
-  console.log('Donating:', val, 'SAR');
-  return true;
-}
-</script>
-
-</body>
-</html>
+<nav class="navbar"><div class="container"><a href="{{ route('cases.index', ['locale'=>$locale]) }}">{{ $locale === 'ar' ? 'جميع الحملات' : 'All Campaigns' }}</a>
+<div><a href="{{ route('cases.show', ['locale'=>'en', 'campaign'=>$case->slug]) }}" lang="en">English</a> | <a href="{{ route('cases.show', ['locale'=>'ar', 'campaign'=>$case->slug]) }}" lang="ar">العربية</a></div></div></nav>
+<main>
+<section id="pageHeader"><div class="header-bg" aria-hidden="true"></div><div class="header-overlay"></div><div class="header-content"><h1 class="header-title">{{ $case->{'title_'.$locale} }}</h1><p class="header-subtitle">{{ $case->category->{'name_'.$locale} }}</p></div></section>
+<section id="casesSection"><div class="container"><div class="row g-4">
+<article class="col-lg-8"><img class="img-fluid" src="{{ route('cases.image', ['locale'=>$locale, 'campaign'=>$case->slug]) }}" alt="{{ $case->{'image_alt_'.$locale} }}">
+<h2 class="mt-4">{{ $case->{'title_'.$locale} }}</h2><p>{{ $case->{'summary_'.$locale} }}</p><p style="white-space: pre-line">{{ $case->{'story_'.$locale} }}</p></article>
+<aside class="col-lg-4"><div class="case-card"><div class="case-body">
+@include('cases.progress')
+<p>{{ $locale === 'ar' ? 'تاريخ النشر' : 'Published' }}: <time datetime="{{ $case->published_at->toIso8601String() }}">{{ $case->published_at->format('Y-m-d H:i') }}</time></p>
+@if($case->expires_at)<p>{{ $locale === 'ar' ? 'تاريخ الانتهاء' : 'Expires' }}: <time datetime="{{ $case->expires_at->toIso8601String() }}">{{ $case->expires_at->format('Y-m-d H:i') }}</time> ({{ config('app.timezone') }})</p>@endif
+<p role="status">{{ $locale === 'ar' ? 'ستتاح التبرعات قريباً' : 'Donations will be available soon' }}</p>
+</div></div></aside>
+</div></div></section>
+</main></body></html>

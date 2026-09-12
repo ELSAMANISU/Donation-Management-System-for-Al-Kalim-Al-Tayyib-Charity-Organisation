@@ -69,6 +69,7 @@ Route::middleware(['auth', 'role:admin,super_admin'])->group(function () {
     Route::get('/admin/campaigns/create', [CampaignController::class, 'create'])->name('admin.campaigns.create');
     Route::post('/admin/campaigns', [CampaignController::class, 'store'])->middleware('throttle:10,1')->name('admin.campaigns.store');
     Route::get('/admin/campaigns/{campaign}/edit', [CampaignController::class, 'edit'])->name('admin.campaigns.edit');
+    Route::post('/admin/campaigns/{campaign}/publish', [CampaignController::class, 'publish'])->middleware('throttle:10,1')->name('admin.campaigns.publish');
     Route::patch('/admin/campaigns/{campaign}', [CampaignController::class, 'update'])->middleware('throttle:10,1')->name('admin.campaigns.update');
     Route::get('/admin/campaigns/{campaign}/image', [CampaignController::class, 'showImage'])->name('admin.campaigns.image.show');
     Route::post('/admin/campaigns/{campaign}/image', [CampaignController::class, 'storeImage'])->middleware('throttle:10,1')->name('admin.campaigns.image.store');
@@ -144,8 +145,9 @@ Route::middleware(['auth', 'role:user'])->prefix('help-applications')->name('hel
     Route::patch('/{helpApplication}', [HelpApplicationController::class, 'update'])->middleware('throttle:10,1')->name('update');
 });
 
-Route::get('/{locale}/cases', [DonationCaseController::class, 'index'])->name('cases.index');
-Route::get('/{locale}/cases/{id}', [DonationCaseController::class, 'show'])->name('cases.show');
+Route::get('/{locale}/cases', [DonationCaseController::class, 'index'])->whereIn('locale', ['ar', 'en'])->name('cases.index');
+Route::get('/{locale}/cases/{campaign}/image', [DonationCaseController::class, 'image'])->whereIn('locale', ['ar', 'en'])->where('campaign', '[a-z0-9]+(?:-[a-z0-9]+)*')->name('cases.image');
+Route::get('/{locale}/cases/{campaign}', [DonationCaseController::class, 'show'])->whereIn('locale', ['ar', 'en'])->where('campaign', '[a-z0-9]+(?:-[a-z0-9]+)*')->name('cases.show');
 
 require __DIR__.'/auth.php';
 

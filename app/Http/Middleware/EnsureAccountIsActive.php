@@ -17,7 +17,7 @@ class EnsureAccountIsActive
     {
         $user = Auth::guard('web')->user();
 
-        if ($request->routeIs('admin.help-applications.in-review.decide', 'admin.help-applications.decided.convert-to-campaign')) {
+        if ($request->routeIs('admin.help-applications.in-review.decide', 'admin.help-applications.decided.convert-to-campaign', 'admin.campaigns.publish')) {
             abort_unless($user !== null && $user->is_active && ! $user->must_change_password
                 && $user->hasAnyRole([UserRole::Admin, UserRole::SuperAdmin]), 404);
         }

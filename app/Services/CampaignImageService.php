@@ -132,7 +132,7 @@ class CampaignImageService
 
         try {
             $disk = Storage::disk(self::DISK);
-            if (! $disk->exists($path)) {
+            if (! $disk->exists($path) || $disk->size($path) > 5 * 1024 * 1024) {
                 abort(404);
             }
             $content = $disk->get($path);
@@ -142,7 +142,12 @@ class CampaignImageService
 
         $extension = pathinfo($path, PATHINFO_EXTENSION);
         $mime = ['jpg' => 'image/jpeg', 'png' => 'image/png', 'webp' => 'image/webp'][$extension] ?? null;
-        if ($mime === null) {
+        $dimensions = @getimagesizefromstring($content);
+        if ($mime === null || strlen($content) > 5 * 1024 * 1024
+            || (new \finfo(FILEINFO_MIME_TYPE))->buffer($content) !== $mime
+            || $dimensions === false || $dimensions[0] < 1 || $dimensions[1] < 1
+            || $dimensions[0] > 8000 || $dimensions[1] > 8000
+            || @imagecreatefromstring($content) === false) {
             abort(404);
         }
 

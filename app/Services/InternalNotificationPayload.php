@@ -24,6 +24,7 @@ final class InternalNotificationPayload
             InternalNotificationType::HelpApplicationNewSubmission,
             InternalNotificationType::HelpApplicationApproved,
             InternalNotificationType::HelpApplicationRejected,
+            InternalNotificationType::HelpApplicationCampaignActivated,
         ], true) || ! is_array($payload) || array_is_list($payload) || count($payload) !== 2) {
             throw $this->invalid();
         }
@@ -50,6 +51,7 @@ final class InternalNotificationPayload
     private function status(InternalNotificationType $type): string
     {
         return match ($type) {
+            InternalNotificationType::HelpApplicationCampaignActivated => 'campaign_active',
             InternalNotificationType::HelpApplicationApproved => 'approved',
             InternalNotificationType::HelpApplicationRejected => 'rejected',
             InternalNotificationType::HelpApplicationSubmissionConfirmation,

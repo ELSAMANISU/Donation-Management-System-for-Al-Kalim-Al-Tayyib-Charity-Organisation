@@ -113,7 +113,7 @@ class Campaign extends Model
     /** @param Builder<Campaign> $query */
     public function scopePublished(Builder $query): void
     {
-        $query->whereNotNull('published_at');
+        $query->whereNotNull('published_at')->where('published_at', '<=', now(config('app.timezone')));
     }
 
     /** @param Builder<Campaign> $query */

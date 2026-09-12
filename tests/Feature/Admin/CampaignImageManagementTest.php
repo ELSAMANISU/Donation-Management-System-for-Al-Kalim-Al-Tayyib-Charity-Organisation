@@ -645,7 +645,7 @@ class CampaignImageManagementTest extends TestCase
             ->assertDontSee($path)->assertDontSee('<script>unsafe</script>', false)->assertDontSee('<b>old</b>', false)
             ->assertDontSee('value="Array"', false)->assertDontSee('name="image_path"', false);
 
-        $this->assertSame('{locale}/cases/{id}', app('router')->getRoutes()->getByName('cases.show')->uri());
+        $this->assertSame('{locale}/cases/{campaign}', app('router')->getRoutes()->getByName('cases.show')->uri());
     }
 
     /** @param array<string,mixed> $overrides */

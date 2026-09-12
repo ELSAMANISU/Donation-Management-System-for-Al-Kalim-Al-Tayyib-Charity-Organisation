@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\PublishCampaignRequest;
 use App\Http\Requests\Admin\StoreCampaignImageRequest;
 use App\Http\Requests\Admin\StoreCampaignRequest;
 use App\Http\Requests\Admin\UpdateCampaignRequest;
@@ -10,12 +11,15 @@ use App\Models\Campaign;
 use App\Models\Category;
 use App\Services\CampaignCreationService;
 use App\Services\CampaignImageService;
+use App\Services\CampaignPublicationService;
 use App\Services\CampaignUpdateService;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class CampaignController extends Controller
 {
@@ -60,7 +64,21 @@ class CampaignController extends Controller
         $categories = Category::query()->active()->select(['id', 'name_ar', 'name_en'])->inDisplayOrder()->get();
         $currentCategory = $campaign->category()->withTrashed()->first();
 
-        return view('admin.campaigns.edit', compact('campaign', 'categories', 'currentCategory'));
+        try {
+            $publicationMissing = app(CampaignPublicationService::class)->missing(request()->user(), $campaign);
+        } catch (HttpException|ModelNotFoundException) {
+            $publicationMissing = ['application'];
+        }
+
+        return view('admin.campaigns.edit', compact('campaign', 'categories', 'currentCategory', 'publicationMissing'));
+    }
+
+    public function publish(PublishCampaignRequest $request, Campaign $campaign, CampaignPublicationService $service): RedirectResponse
+    {
+        $service->publish($request->user(), $campaign, $request->expiration());
+
+        return redirect()->route('admin.campaigns.index')->with('status', 'campaign-published')
+            ->withHeaders(['Cache-Control' => 'no-store, private', 'Pragma' => 'no-cache']);
     }
 
     public function update(UpdateCampaignRequest $request, Campaign $campaign): RedirectResponse

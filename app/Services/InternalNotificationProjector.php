@@ -98,7 +98,7 @@ final class InternalNotificationProjector
             $intent->attempts++;
             $intent->last_attempted_at = $attemptedAt;
             $event = InternalNotificationEvent::query()->lockForUpdate()->findOrFail($intent->event_id);
-            $application = $event->application()->firstOrFail();
+            $application = $event->application()->select(['id', 'reference'])->firstOrFail();
 
             if ($intent->recipient_id === null || $intent->recipient()->first() === null) {
                 $intent->state = InternalNotificationProjectionState::Cancelled;

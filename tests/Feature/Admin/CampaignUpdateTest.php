@@ -438,7 +438,7 @@ class CampaignUpdateTest extends TestCase
         $this->actingAs($admin)->get(route('admin.campaigns.index'))->assertSee(route('admin.campaigns.edit', $draft))->assertDontSee(route('admin.campaigns.edit', $active));
         $this->get(route('admin.campaigns.edit', $draft))->assertOk()->assertSee('safe-slug')->assertDontSee('<script>x</script>', false)
             ->assertSee('lang="ar" dir="rtl"', false)->assertSee('lang="en" dir="ltr"', false)->assertDontSee('name="slug"', false)->assertDontSee('published_at');
-        $this->assertSame('{locale}/cases/{id}', app('router')->getRoutes()->getByName('cases.show')->uri());
+        $this->assertSame('{locale}/cases/{campaign}', app('router')->getRoutes()->getByName('cases.show')->uri());
     }
 
     /** @param array<string,mixed> $overrides */
