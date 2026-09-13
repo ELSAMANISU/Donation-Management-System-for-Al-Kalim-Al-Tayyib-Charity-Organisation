@@ -13,12 +13,14 @@ use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Applicant\HelpApplicationController;
 use App\Http\Controllers\Applicant\HelpApplicationDocumentController;
 use App\Http\Controllers\DonationCaseController;
+use App\Http\Controllers\DonationController;
+use App\Http\Controllers\HomepageController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Middleware\EnsureSandboxDonationsEnabled;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get('/', HomepageController::class)->name('home');
+Route::get('/{locale}', HomepageController::class)->whereIn('locale', ['ar', 'en'])->name('home.localized');
 
 Route::get('/dashboard', function () {
     return view('dashboard');
@@ -148,6 +150,15 @@ Route::middleware(['auth', 'role:user'])->prefix('help-applications')->name('hel
 Route::get('/{locale}/cases', [DonationCaseController::class, 'index'])->whereIn('locale', ['ar', 'en'])->name('cases.index');
 Route::get('/{locale}/cases/{campaign}/image', [DonationCaseController::class, 'image'])->whereIn('locale', ['ar', 'en'])->where('campaign', '[a-z0-9]+(?:-[a-z0-9]+)*')->name('cases.image');
 Route::get('/{locale}/cases/{campaign}', [DonationCaseController::class, 'show'])->whereIn('locale', ['ar', 'en'])->where('campaign', '[a-z0-9]+(?:-[a-z0-9]+)*')->name('cases.show');
+
+Route::prefix('{locale}')->whereIn('locale', ['ar', 'en'])->name('donations.')->middleware(EnsureSandboxDonationsEnabled::class)->controller(DonationController::class)->group(function () {
+    Route::get('/my-donations', 'index')->middleware('auth')->name('index');
+    Route::get('/cases/{campaign}/donate', 'create')->where('campaign', '[a-z0-9]+(?:-[a-z0-9]+)*')->name('create');
+    Route::post('/cases/{campaign}/donate', 'store')->where('campaign', '[a-z0-9]+(?:-[a-z0-9]+)*')->middleware('throttle:donation-entry')->name('store');
+    Route::get('/donations/{donation}/checkout/{capability?}', 'checkout')->where('donation', '[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}')->where('capability', '[0-9a-f]{64}')->middleware('throttle:donation-checkout')->name('checkout');
+    Route::post('/donations/{donation}/outcome/{action}/{capability?}', 'outcome')->where('donation', '[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}')->whereIn('action', ['success', 'failure', 'cancellation'])->where('capability', '[0-9a-f]{64}')->middleware('throttle:donation-outcome')->name('outcome');
+    Route::get('/donations/{donation}/result/{capability?}', 'show')->where('donation', '[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}')->where('capability', '[0-9a-f]{64}')->middleware('throttle:donation-result')->name('show');
+});
 
 require __DIR__.'/auth.php';
 

@@ -4,6 +4,7 @@ namespace App\Enums;
 
 enum InternalNotificationType: string
 {
+    case CampaignFundingCompleted = 'campaign_funding_completed';
     case HelpApplicationCampaignActivated = 'help_application_campaign_activated';
     case HelpApplicationSubmissionConfirmation = 'help_application_submission_confirmation';
     case HelpApplicationNewSubmission = 'help_application_new_submission';

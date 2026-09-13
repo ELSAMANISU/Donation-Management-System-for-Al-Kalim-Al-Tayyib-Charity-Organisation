@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr" id="htmlRoot">
+<html lang="{{ $locale }}" dir="{{ $locale === 'ar' ? 'rtl' : 'ltr' }}" id="htmlRoot">
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -516,6 +516,7 @@
       box-shadow: 0 14px 40px rgba(0,0,0,0.12);
     }
     .case-img-wrap {
+      display: block;
       position: relative;
       height: 178px;
       overflow: hidden;
@@ -554,14 +555,18 @@
     html[dir="ltr"] .case-tag { right: auto; left: 12px; }
     .case-body { padding: 30px 18px 18px; }
     .case-title { font-size: 0.97rem; font-weight: 700; color: var(--navy); margin-bottom: 10px; }
-    .case-progress-label {
+    .case-progress-label, #donationCases .progress-label {
       display: flex;
       justify-content: space-between;
+      align-items: center;
+      gap: 0.75rem;
       font-size: 0.73rem;
       color: var(--text-muted);
       margin-bottom: 5px;
     }
-    .case-progress-label .pct { color: var(--accent); font-weight: 700; }
+    .case-progress-label .pct, #donationCases .progress-label > span:last-child { color: var(--accent); font-weight: 700; white-space: nowrap; }
+    #donationCases .case-body > p[role="status"] { color: var(--text-muted); font-size: 0.8rem; margin-bottom: 14px; text-align: start; }
+    #donationCases .case-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
     .progress {
       height: 7px;
       border-radius: 10px;
@@ -597,21 +602,8 @@
     }
     .case-meta span { display: flex; align-items: center; gap: 4px; }
     .case-meta strong { color: var(--navy); font-weight: 700; }
-    .case-input-group { display: flex; gap: 8px; }
-    .case-input-group input {
-      flex: 1;
-      border: 1.5px solid var(--mid-gray);
-      border-radius: 8px;
-      padding: 8px 12px;
-      font-family: var(--font-main);
-      font-size: 0.84rem;
-      color: var(--navy);
-      outline: none;
-      transition: border 0.2s;
-    }
-    .case-input-group input:focus { border-color: var(--primary); }
-    .case-input-group input::placeholder { color: var(--text-muted); }
-    .btn-case {
+    .btn-details, .btn-case {
+      display: inline-block;
       background: var(--accent);
       color: var(--white);
       border: none;
@@ -1130,9 +1122,7 @@
   <!-- Sidebar Navigation -->
   <ul class="sidebar-nav-list">
     <li>
-      <a href="#">
-        <i class="fas fa-heart"></i>
-        <span data-en="My Donations" data-ar="تبرعاتي">My Donations</span>
+      <a href="{{ route('donations.index', ['locale'=>$locale]) }}"><i class="fa-solid fa-heart"></i><span data-en="My Donations" data-ar="تبرعاتي">My Donations</span>
       </a>
     </li>
     @can('viewAny', \App\Models\HelpApplication::class)
@@ -1302,218 +1292,29 @@
     <div class="cases-scroll-wrapper">
       <div class="cases-row">
 
-        <!-- Case 1: Quran Education -->
-        <div class="case-card fade-up delay-1">
-          <div class="case-img-wrap">
-            <img src="https://images.unsplash.com/photo-1603009128563-f6c39c09e9db?w=600&q=80"
-                 alt="Quran Education"/>
-            <div class="case-icon-badge"><i class="fa-solid fa-book-quran"></i></div>
-            <span class="case-tag"
-                  data-en="Education"
-                  data-ar="تعليم">Education</span>
-          </div>
+        @forelse($cases as $case)
+        <article class="case-card">
+          <a class="case-img-wrap" href="{{ route('cases.show', ['locale'=>$locale, 'campaign'=>$case->slug]) }}"><img src="{{ route('cases.image', ['locale'=>$locale, 'campaign'=>$case->slug]) }}" alt="{{ $case->{'image_alt_'.$locale} }}" loading="lazy"></a>
           <div class="case-body">
-            <h5 class="case-title"
-                data-en="Distributing the Holy Quran &amp; Quranic Education"
-                data-ar="نشر المصاحف والتعليم القرآني">
-              Distributing the Holy Quran &amp; Quranic Education
-            </h5>
-            <div class="case-progress-label">
-              <span data-en="Raised: <strong>18,450 SAR</strong>"
-                    data-ar="تم جمع: <strong>18,450 ر.س</strong>">
-                Raised: <strong>18,450 SAR</strong>
-              </span>
-              <span class="pct">72%</span>
-            </div>
-            <div class="progress">
-              <div class="progress-bar" style="width:72%"></div>
-            </div>
-            <div class="case-meta">
-              <span>
-                <i class="fa-regular fa-clock"></i>
-                <span data-en="Remaining: <strong>7,550 SAR</strong>"
-                      data-ar="المتبقي: <strong>7,550 ر.س</strong>">
-                  Remaining: <strong>7,550 SAR</strong>
-                </span>
-              </span>
-              <span>
-                <i class="fa-solid fa-flag-checkered"></i>
-                <span data-en="Goal: <strong>26,000 SAR</strong>"
-                      data-ar="الهدف: <strong>26,000 ر.س</strong>">
-                  Goal: <strong>26,000 SAR</strong>
-                </span>
-              </span>
-            </div>
-            <div class="case-input-group">
-              <input type="number" min="10"
-                     data-en-placeholder="Enter amount (SAR)"
-                     data-ar-placeholder="أدخل المبلغ (ر.س)"
-                     placeholder="Enter amount (SAR)"/>
-              <button class="btn-case"
-                      data-en="Donate" data-ar="تبرع">Donate</button>
+            <span>{{ $case->category->{'name_'.$locale} }}</span>
+            <h3 class="case-title">{{ $case->{'title_'.$locale} }}</h3>
+            <p>{{ $case->{'summary_'.$locale} }}</p>
+            @include('cases.progress')
+            @if(\App\Services\DonationMoney::remaining($case))<p>{{ $locale === 'ar' ? 'المتبقي' : 'Remaining' }}: {{ \App\Services\DonationMoney::remaining($case) }} {{ $locale === 'ar' ? 'ج.س' : 'SDG' }}</p>@endif
+            @if($case->status === \App\Enums\CampaignStatus::Funded)
+            @include('cases.donate')
+            @endif
+            <div class="case-actions">
+              <a class="btn-case" href="{{ route('cases.show', ['locale'=>$locale, 'campaign'=>$case->slug]) }}">{{ $locale === 'ar' ? 'تفاصيل الحملة' : 'Campaign details' }}</a>
+              @unless($case->status === \App\Enums\CampaignStatus::Funded)
+              @include('cases.donate')
+              @endunless
             </div>
           </div>
-        </div>
-
-        <!-- Case 2: Clean Water -->
-        <div class="case-card fade-up delay-2">
-          <div class="case-img-wrap">
-            <img src="https://images.unsplash.com/photo-1583120283327-4b8d9e6fd64c?w=600&q=80"
-                 alt="Clean Water"/>
-            <div class="case-icon-badge"><i class="fa-solid fa-faucet-drip"></i></div>
-            <span class="case-tag"
-                  data-en="Water"
-                  data-ar="مياه">Water</span>
-          </div>
-          <div class="case-body">
-            <h5 class="case-title"
-                data-en="Digging Wells &amp; Providing Clean Water"
-                data-ar="حفر الآبار وتوفير المياه النظيفة">
-              Digging Wells &amp; Providing Clean Water
-            </h5>
-            <div class="case-progress-label">
-              <span data-en="Raised: <strong>34,200 SAR</strong>"
-                    data-ar="تم جمع: <strong>34,200 ر.س</strong>">
-                Raised: <strong>34,200 SAR</strong>
-              </span>
-              <span class="pct">85%</span>
-            </div>
-            <div class="progress">
-              <div class="progress-bar" style="width:85%"></div>
-            </div>
-            <div class="case-meta">
-              <span>
-                <i class="fa-regular fa-clock"></i>
-                <span data-en="Remaining: <strong>5,800 SAR</strong>"
-                      data-ar="المتبقي: <strong>5,800 ر.س</strong>">
-                  Remaining: <strong>5,800 SAR</strong>
-                </span>
-              </span>
-              <span>
-                <i class="fa-solid fa-flag-checkered"></i>
-                <span data-en="Goal: <strong>40,000 SAR</strong>"
-                      data-ar="الهدف: <strong>40,000 ر.س</strong>">
-                  Goal: <strong>40,000 SAR</strong>
-                </span>
-              </span>
-            </div>
-            <div class="case-input-group">
-              <input type="number" min="10"
-                     data-en-placeholder="Enter amount (SAR)"
-                     data-ar-placeholder="أدخل المبلغ (ر.س)"
-                     placeholder="Enter amount (SAR)"/>
-              <button class="btn-case"
-                      data-en="Donate" data-ar="تبرع">Donate</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Case 3: Mosque Build -->
-        <div class="case-card fade-up delay-3">
-          <div class="case-img-wrap">
-            <img src="https://images.unsplash.com/photo-1548449112-96a38a643324?w=600&q=80"
-                 alt="Mosque Construction"/>
-            <div class="case-icon-badge"><i class="fa-solid fa-mosque"></i></div>
-            <span class="case-tag"
-                  data-en="Worship"
-                  data-ar="عبادة">Worship</span>
-          </div>
-          <div class="case-body">
-            <h5 class="case-title"
-                data-en="Building a Mosque in South Sudan"
-                data-ar="بناء مسجد في جنوب السودان">
-              Building a Mosque in South Sudan
-            </h5>
-            <div class="case-progress-label">
-              <span data-en="Raised: <strong>51,000 SAR</strong>"
-                    data-ar="تم جمع: <strong>51,000 ر.س</strong>">
-                Raised: <strong>51,000 SAR</strong>
-              </span>
-              <span class="pct">51%</span>
-            </div>
-            <div class="progress">
-              <div class="progress-bar" style="width:51%"></div>
-            </div>
-            <div class="case-meta">
-              <span>
-                <i class="fa-regular fa-clock"></i>
-                <span data-en="Remaining: <strong>49,000 SAR</strong>"
-                      data-ar="المتبقي: <strong>49,000 ر.س</strong>">
-                  Remaining: <strong>49,000 SAR</strong>
-                </span>
-              </span>
-              <span>
-                <i class="fa-solid fa-flag-checkered"></i>
-                <span data-en="Goal: <strong>100,000 SAR</strong>"
-                      data-ar="الهدف: <strong>100,000 ر.س</strong>">
-                  Goal: <strong>100,000 SAR</strong>
-                </span>
-              </span>
-            </div>
-            <div class="case-input-group">
-              <input type="number" min="10"
-                     data-en-placeholder="Enter amount (SAR)"
-                     data-ar-placeholder="أدخل المبلغ (ر.س)"
-                     placeholder="Enter amount (SAR)"/>
-              <button class="btn-case"
-                      data-en="Donate" data-ar="تبرع">Donate</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Case 4: Orphan Sponsorship -->
-        <div class="case-card fade-up delay-4">
-          <div class="case-img-wrap">
-            <img src="https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=600&q=80"
-                 alt="Orphans"/>
-            <div class="case-icon-badge"><i class="fa-solid fa-child-reaching"></i></div>
-            <span class="case-tag"
-                  data-en="Orphans"
-                  data-ar="أيتام">Orphans</span>
-          </div>
-          <div class="case-body">
-            <h5 class="case-title"
-                data-en="Sponsoring Orphans &amp; Displaced Families"
-                data-ar="كفالة أيتام وأسر متضررة">
-              Sponsoring Orphans &amp; Displaced Families
-            </h5>
-            <div class="case-progress-label">
-              <span data-en="Raised: <strong>12,300 SAR</strong>"
-                    data-ar="تم جمع: <strong>12,300 ر.س</strong>">
-                Raised: <strong>12,300 SAR</strong>
-              </span>
-              <span class="pct">41%</span>
-            </div>
-            <div class="progress">
-              <div class="progress-bar" style="width:41%"></div>
-            </div>
-            <div class="case-meta">
-              <span>
-                <i class="fa-regular fa-clock"></i>
-                <span data-en="Remaining: <strong>17,700 SAR</strong>"
-                      data-ar="المتبقي: <strong>17,700 ر.س</strong>">
-                  Remaining: <strong>17,700 SAR</strong>
-                </span>
-              </span>
-              <span>
-                <i class="fa-solid fa-flag-checkered"></i>
-                <span data-en="Goal: <strong>30,000 SAR</strong>"
-                      data-ar="الهدف: <strong>30,000 ر.س</strong>">
-                  Goal: <strong>30,000 SAR</strong>
-                </span>
-              </span>
-            </div>
-            <div class="case-input-group">
-              <input type="number" min="10"
-                     data-en-placeholder="Enter amount (SAR)"
-                     data-ar-placeholder="أدخل المبلغ (ر.س)"
-                     placeholder="Enter amount (SAR)"/>
-              <button class="btn-case"
-                      data-en="Donate" data-ar="تبرع">Donate</button>
-            </div>
-          </div>
-        </div>
-
+        </article>
+        @empty
+        <p role="status">{{ $locale === 'ar' ? 'لا توجد حملات منشورة حالياً.' : 'No published Campaigns at the moment.' }}</p>
+        @endforelse
       </div><!-- /.cases-row -->
     </div><!-- /.cases-scroll-wrapper -->
   </div>
@@ -1814,10 +1615,10 @@
       <div class="col-6 col-md-3 fade-up delay-1">
         <div class="stat-item">
           <div class="stat-icon"><i class="fa-solid fa-hand-holding-heart"></i></div>
-          <div class="stat-number">4.2M+</div>
+          <div class="stat-number">SDG</div>
           <div class="stat-label"
-               data-en="SAR Total Donations"
-               data-ar="ريال إجمالي التبرعات">SAR Total Donations</div>
+               data-en="Sandbox donations only"
+               data-ar="تبرعات تجريبية فقط">SDG Total Donations</div>
         </div>
       </div>
 
@@ -2036,9 +1837,10 @@
 const BOOTSTRAP_LTR = 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css';
 const BOOTSTRAP_RTL = 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css';
 
-let currentLang = localStorage.getItem('alkLang') || 'en';
+let currentLang = @json($locale);
 
 function setLang(lang) {
+  if (lang !== @json($locale)) { window.location.assign('/' + lang); return; }
   currentLang = lang;
   localStorage.setItem('alkLang', lang);
 
@@ -2099,31 +1901,7 @@ document.querySelectorAll('.fade-up').forEach(el => fadeObserver.observe(el));
 // ════════════════════════════════════════════════════════════
 // DONATION BUTTON: feedback on click
 // ════════════════════════════════════════════════════════════
-document.querySelectorAll('.btn-case').forEach(btn => {
-  btn.addEventListener('click', function () {
-    const input = this.closest('.case-input-group').querySelector('input');
-    const val = parseFloat(input.value);
-    if (!val || val < 10) {
-      input.style.borderColor = '#e53e3e';
-      const ph = currentLang === 'ar' ? 'الحد الأدنى ١٠' : 'Min. 10 SAR';
-      input.placeholder = ph;
-      setTimeout(() => {
-        input.style.borderColor = '';
-        input.placeholder = input.getAttribute('data-' + currentLang + '-placeholder');
-      }, 2200);
-    } else {
-      const orig = this.innerHTML;
-      const ok = currentLang === 'ar' ? '✓ شكراً!' : '✓ Thank you!';
-      this.innerHTML = ok;
-      this.style.background = '#2ecc71';
-      setTimeout(() => {
-        this.innerHTML = orig;
-        this.style.background = '';
-        input.value = '';
-      }, 2600);
-    }
-  });
-});
+
 
 // ════════════════════════════════════════════════════════════
 // INIT: Apply persisted language on page load

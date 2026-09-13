@@ -511,7 +511,7 @@ class HelpApplicationDraftManagementTest extends TestCase
             User::factory()->mustChangePassword()->create(),
         ] as $ineligible) {
             $this->actingAs($ineligible);
-            $ineligibleHtml = view('welcome')->render();
+            $ineligibleHtml = view('welcome', ['locale' => 'en', 'cases' => collect()])->render();
             $this->assertSame(0, substr_count($ineligibleHtml, 'href="'.$indexUrl.'"'));
             $this->assertStringNotContainsString('data-en="My Help Application"', $ineligibleHtml);
         }

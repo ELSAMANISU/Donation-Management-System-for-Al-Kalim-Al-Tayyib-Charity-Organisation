@@ -32,9 +32,9 @@ class InternalNotificationDataFoundationTest extends TestCase
 
     public function test_schema_and_enums_are_exact(): void
     {
-        $this->assertSame(['help_application_campaign_activated', 'help_application_submitted', 'help_application_approved', 'help_application_rejected'], array_column(InternalNotificationEventType::cases(), 'value'));
+        $this->assertSame(['campaign_funding_completed', 'help_application_campaign_activated', 'help_application_submitted', 'help_application_approved', 'help_application_rejected'], array_column(InternalNotificationEventType::cases(), 'value'));
         $this->assertSame(['applicant', 'administrator'], array_column(InternalNotificationAudience::cases(), 'value'));
-        $this->assertSame(['help_application_campaign_activated', 'help_application_submission_confirmation', 'help_application_new_submission', 'help_application_approved', 'help_application_rejected'], array_column(InternalNotificationType::cases(), 'value'));
+        $this->assertSame(['campaign_funding_completed', 'help_application_campaign_activated', 'help_application_submission_confirmation', 'help_application_new_submission', 'help_application_approved', 'help_application_rejected'], array_column(InternalNotificationType::cases(), 'value'));
         $this->assertSame(['pending', 'projected', 'cancelled'], array_column(InternalNotificationProjectionState::cases(), 'value'));
 
         $this->assertTrue(Schema::hasColumns('internal_notification_events', ['id', 'reference', 'type', 'help_application_id', 'deduplication_key', 'occurred_at', 'projected_at', 'created_at']));

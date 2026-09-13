@@ -35,6 +35,7 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
+        'donations',
     ];
 
     /**
@@ -53,6 +54,11 @@ class User extends Authenticatable
             'must_change_password' => 'boolean',
             'password_changed_at' => 'datetime',
         ];
+    }
+
+    public function donations(): HasMany
+    {
+        return $this->hasMany(Donation::class, 'donor_id');
     }
 
     /**

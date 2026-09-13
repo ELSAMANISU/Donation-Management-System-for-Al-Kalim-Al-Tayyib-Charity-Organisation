@@ -408,7 +408,7 @@
 @include('cases.progress')
 <p>{{ $locale === 'ar' ? 'تاريخ النشر' : 'Published' }}: <time datetime="{{ $case->published_at->toIso8601String() }}">{{ $case->published_at->format('Y-m-d H:i') }}</time></p>
 @if($case->expires_at)<p>{{ $locale === 'ar' ? 'تاريخ الانتهاء' : 'Expires' }}: <time datetime="{{ $case->expires_at->toIso8601String() }}">{{ $case->expires_at->format('Y-m-d H:i') }}</time> ({{ config('app.timezone') }})</p>@endif
-<p role="status">{{ $locale === 'ar' ? 'ستتاح التبرعات قريباً' : 'Donations will be available soon' }}</p>
+@include('cases.donate')
 </div></div></aside>
 </div></div></section>
 </main></body></html>

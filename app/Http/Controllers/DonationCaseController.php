@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Campaign;
 use App\Models\Category;
 use App\Services\CampaignImageService;
+use App\Services\PublicCampaignQuery;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 
@@ -12,21 +12,12 @@ class DonationCaseController extends Controller
 {
     private function visible(): Builder
     {
-        return Campaign::query()->publiclyVisible()
-            ->whereHas('category', fn ($query) => $query->select('id')->active())
-            ->where(fn ($query) => $query->whereNull('expires_at')->orWhere('expires_at', '>', now()));
+        return app(PublicCampaignQuery::class)->visible();
     }
 
     private function content(string $locale, bool $detail = false): Builder
     {
-        abort_unless(in_array($locale, ['ar', 'en'], true), 404);
-        app()->setLocale($locale);
-        $fields = ['id', 'category_id', 'slug', 'title_'.$locale, 'summary_'.$locale, 'image_alt_'.$locale, 'target_amount', 'raised_amount', 'published_at', 'expires_at'];
-        if ($detail) {
-            $fields[] = 'story_'.$locale;
-        }
-
-        return $this->visible()->select($fields)->with(['category' => fn ($query) => $query->select(['id', 'slug', 'name_'.$locale])->active()]);
+        return app(PublicCampaignQuery::class)->content($locale, $detail);
     }
 
     public function index(Request $request, string $locale)

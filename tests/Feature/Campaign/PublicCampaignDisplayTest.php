@@ -160,6 +160,7 @@ class PublicCampaignDisplayTest extends TestCase
 
     public function test_localized_copy_is_escaped_without_opposite_language_or_private_queries(): void
     {
+        config(['donations.driver' => 'sandbox']);
         $application = HelpApplication::factory()->create(['private_story' => 'ULTRA PRIVATE STORY', 'decision_note' => 'ULTRA PRIVATE NOTE']);
         $category = Category::factory()->create(['name_en' => '<b>Category</b>']);
         $campaign = $this->campaign(['help_application_id' => $application->id, 'category_id' => $category->id,
@@ -172,7 +173,7 @@ class PublicCampaignDisplayTest extends TestCase
                 ->assertDontSee('<script>Title</script>', false)->assertDontSee('<b>Summary</b>', false)->assertDontSee('<b>Category</b>', false)
                 ->assertDontSee($campaign->title_ar)->assertDontSee($campaign->summary_ar)->assertDontSee($campaign->image_path)
                 ->assertDontSee('ULTRA PRIVATE')->assertDontSee($application->reference)->assertDontSee('name="amount"', false)->assertDontSee('id="donateForm"', false)
-                ->assertSee('Donations will be available soon');
+                ->assertSee('Donate now');
             $this->assertStringNotContainsString('" onerror="alert(1)', $response->getContent());
         }
         $this->get('/en/cases/'.$campaign->slug)->assertSee($campaign->story_en)->assertDontSee('<script>Story</script>', false)->assertDontSee($campaign->story_ar);
@@ -224,7 +225,7 @@ class PublicCampaignDisplayTest extends TestCase
         foreach (['index', 'show', 'progress'] as $view) {
             $source = file_get_contents(resource_path('views/cases/'.$view.'.blade.php'));
             $this->assertStringNotContainsString('unsplash', $source);
-            $this->assertDoesNotMatchRegularExpression('/donate|payment|stripe|paypal/i', $source);
+            $this->assertDoesNotMatchRegularExpression('/stripe|paypal|handleDonate|name="amount"/i', $source);
         }
         $campaign = $this->campaign();
         $this->get('/en/cases/'.$campaign->slug)->assertDontSee('Donate Now')->assertDontSee('handleDonate')->assertDontSee('name="amount"', false);

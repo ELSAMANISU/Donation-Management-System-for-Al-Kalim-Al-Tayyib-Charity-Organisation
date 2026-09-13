@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Data\InternalNotificationProjectionResult;
 use App\Enums\InternalNotificationProjectionState;
+use App\Enums\InternalNotificationType;
 use App\Models\InternalNotification;
 use App\Models\InternalNotificationEvent;
 use App\Models\InternalNotificationEventRecipient;
@@ -109,7 +110,7 @@ final class InternalNotificationProjector
                 return InternalNotificationProjectionState::Cancelled;
             }
 
-            $data = $this->payload->build($intent->notification_type, $application->reference);
+            $data = $this->payload->build($intent->notification_type, $intent->notification_type === InternalNotificationType::CampaignFundingCompleted ? $event->reference : $application->reference);
             $notification = InternalNotification::query()->where('event_recipient_id', $intent->getKey())->first();
 
             if ($notification === null) {

@@ -404,7 +404,7 @@
 <main>
 <section id="pageHeader"><div class="header-bg" aria-hidden="true"></div><div class="header-overlay"></div><div class="header-content">
 <h1 class="header-title">{{ $category?->{'name_'.$locale} ?? ($locale === 'ar' ? 'الحملات المنشورة' : 'Published Campaigns') }}</h1>
-<p class="header-subtitle">{{ $locale === 'ar' ? 'ستتاح التبرعات قريباً' : 'Donations will be available soon' }}</p>
+<p class="header-subtitle">{{ $locale === 'ar' ? 'تبرعات تجريبية بالجنيه السوداني' : 'Sandbox donations in SDG' }}</p>
 </div></section>
 <section id="casesSection"><div class="container">
 <nav class="mb-5" aria-label="{{ $locale === 'ar' ? 'الفئات' : 'Categories' }}">
@@ -420,6 +420,7 @@
 <div class="case-body"><h2 class="case-title"><a href="{{ route('cases.show', ['locale'=>$locale, 'campaign'=>$case->slug]) }}">{{ $case->{'title_'.$locale} }}</a></h2>
 <p>{{ $case->{'summary_'.$locale} }}</p>
 @include('cases.progress')
+@include('cases.donate')
 <a class="btn-details" href="{{ route('cases.show', ['locale'=>$locale, 'campaign'=>$case->slug]) }}">{{ $locale === 'ar' ? 'تفاصيل الحملة' : 'Campaign details' }}</a>
 </div></article></div>
 @empty
