@@ -26,6 +26,7 @@ class HelpApplication extends Model
 
     /** @var list<string> */
     protected $hidden = [
+        'coordination',
         'decision_note',
         'full_name',
         'email',
@@ -90,6 +91,11 @@ class HelpApplication extends Model
     public function applicant(): BelongsTo
     {
         return $this->belongsTo(User::class, 'applicant_id');
+    }
+
+    public function coordination(): HasOne
+    {
+        return $this->hasOne(AssistanceCoordination::class);
     }
 
     public function campaign(): HasOne

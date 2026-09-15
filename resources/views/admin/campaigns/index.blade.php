@@ -36,7 +36,11 @@
                                 \App\Enums\CampaignStatus::Completed => 'Completed / مكتملة',
                                 \App\Enums\CampaignStatus::Cancelled => 'Cancelled / ملغاة',
                             } }}</td>
-                            <td class="px-6 py-4">{{ $campaign->target_amount }} SDG / ج.س</td><td class="px-6 py-4">{{ $campaign->created_at?->format('Y-m-d') }}</td><td class="px-6 py-4">@can('update', $campaign)<a class="text-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500" href="{{ route('admin.campaigns.edit', $campaign) }}">Edit / <span lang="ar" dir="rtl">تعديل</span></a>@endcan</td></tr>
+                            <td class="px-6 py-4">{{ $campaign->target_amount }} SDG / ج.س</td><td class="px-6 py-4">{{ $campaign->created_at?->format('Y-m-d') }}</td><td class="px-6 py-4">@can('update', $campaign)<a class="text-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500" href="{{ route('admin.campaigns.edit', $campaign) }}">Edit / <span lang="ar" dir="rtl">تعديل</span></a>@endcan
+@if($campaign->status === \App\Enums\CampaignStatus::Funded && $campaign->helpApplication && app(\App\Policies\AssistanceCoordinationPolicy::class)->administer(auth()->user(), $campaign->helpApplication))
+<a class="text-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500" href="{{ route('admin.coordination.entry', ['helpApplication' => $campaign->helpApplication->reference]) }}">Private coordination / <span lang="ar" dir="rtl">التنسيق الخاص</span></a>
+@endif
+</td></tr>
                     @endforeach
                     </tbody></table></div>
                 {{ $campaigns->links() }}

@@ -28,6 +28,9 @@
                     <p class="mt-4 text-gray-700">Current status: <strong>{{ $statusLabel }}</strong></p>
                     <p class="mt-2 text-gray-700">Draft editing is unavailable at this stage. / <span lang="ar" dir="rtl">تعديل المسودة غير متاح في هذه المرحلة.</span></p>
                 @endif
+                @if($application?->status === \App\Enums\HelpApplicationStatus::CampaignActive && $application->campaign?->status === \App\Enums\CampaignStatus::Funded && ! $application->campaign->trashed())
+                    <a class="mt-4 inline-flex text-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500" href="{{ route('help-applications.coordination.entry', ['helpApplication' => $application->reference]) }}">Private coordination / <span lang="ar" dir="rtl">التنسيق الخاص</span></a>
+                @endif
             </section>
         </div>
     </div>

@@ -33,8 +33,8 @@ class CampaignController extends Controller
     {
         Gate::authorize('viewAny', Campaign::class);
         $campaigns = Campaign::query()
-            ->select(['id', 'category_id', 'slug', 'title_ar', 'title_en', 'status', 'target_amount', 'created_at'])
-            ->with(['category' => fn ($query) => $query->withTrashed()->select(['id', 'name_ar', 'name_en'])])
+            ->select(['id', 'help_application_id', 'category_id', 'slug', 'title_ar', 'title_en', 'status', 'target_amount', 'created_at'])
+            ->with(['helpApplication' => fn ($query) => $query->select(['id', 'reference', 'reviewed_by']), 'category' => fn ($query) => $query->withTrashed()->select(['id', 'name_ar', 'name_en'])])
             ->orderByDesc('created_at')->orderByDesc('id')->paginate(15);
 
         return view('admin.campaigns.index', compact('campaigns'));

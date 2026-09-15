@@ -12,10 +12,12 @@ use App\Http\Controllers\Admin\InReviewHelpApplicationController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Applicant\HelpApplicationController;
 use App\Http\Controllers\Applicant\HelpApplicationDocumentController;
+use App\Http\Controllers\AssistanceCoordinationController;
 use App\Http\Controllers\DonationCaseController;
 use App\Http\Controllers\DonationController;
 use App\Http\Controllers\HomepageController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Middleware\EnsureCoordinationAccount;
 use App\Http\Middleware\EnsureSandboxDonationsEnabled;
 use Illuminate\Support\Facades\Route;
 
@@ -160,6 +162,22 @@ Route::prefix('{locale}')->whereIn('locale', ['ar', 'en'])->name('donations.')->
     Route::get('/donations/{donation}/result/{capability?}', 'show')->where('donation', '[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}')->where('capability', '[0-9a-f]{64}')->middleware('throttle:donation-result')->name('show');
 });
 
+// Private coordination uses UUID references and its own stricter authorization.
+foreach (['admin' => ['admin/assistance-coordination', 'admin.coordination.', 'admin,super_admin'],
+    'applicant' => ['help-applications', 'help-applications.coordination.', 'user']] as $side => [$prefix, $name, $role]) {
+    Route::prefix($prefix)->name($name)->middleware([EnsureCoordinationAccount::class, 'auth', 'role:'.$role])
+        ->group(function () use ($side) {
+            $entry = $side === 'admin' ? '/{helpApplication}' : '/{helpApplication}/coordination';
+            Route::get($entry, [AssistanceCoordinationController::class, 'show'])->whereUuid('helpApplication')->middleware('throttle:coordination-read')->name('entry');
+            Route::get($entry.'/{coordination}', [AssistanceCoordinationController::class, 'show'])->whereUuid(['helpApplication', 'coordination'])->middleware('throttle:coordination-read')->name('show');
+            $actions = $side === 'admin' ? ['start', 'message', 'correct', 'confirm'] : ['message', 'respond'];
+            foreach ($actions as $action) {
+                Route::post($entry.($action === 'start' ? '' : '/{coordination}').'/'.$action,
+                    [AssistanceCoordinationController::class, 'mutate'])
+                    ->whereUuid(['helpApplication', 'coordination'])->middleware('throttle:coordination-'.$action)->name($action);
+            }
+        });
+}
 require __DIR__.'/auth.php';
 
 // Enhanced modern Islamic Glassmorphism UI routes integrated successfully.

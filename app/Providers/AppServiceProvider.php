@@ -29,7 +29,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        foreach (['donation-entry' => 6, 'donation-outcome' => 10, 'donation-checkout' => 30, 'donation-result' => 30] as $name => $maximum) {
+        foreach (['coordination-read' => 30, 'coordination-start' => 6, 'coordination-respond' => 6, 'coordination-correct' => 6, 'coordination-confirm' => 6, 'coordination-message' => 10, 'donation-entry' => 6, 'donation-outcome' => 10, 'donation-checkout' => 30, 'donation-result' => 30] as $name => $maximum) {
             RateLimiter::for($name, fn (Request $request) => Limit::perMinute($maximum)->by($request->user()?->id ?? $request->ip()));
         }
     }

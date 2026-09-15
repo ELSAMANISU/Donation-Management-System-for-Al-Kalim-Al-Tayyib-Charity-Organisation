@@ -3,11 +3,15 @@
 namespace App\Services;
 
 use App\Data\InternalNotificationProjectionResult;
+use App\Enums\InternalNotificationAudience;
 use App\Enums\InternalNotificationProjectionState;
 use App\Enums\InternalNotificationType;
+use App\Enums\UserRole;
+use App\Models\AssistanceCoordination;
 use App\Models\InternalNotification;
 use App\Models\InternalNotificationEvent;
 use App\Models\InternalNotificationEventRecipient;
+use App\Policies\AssistanceCoordinationPolicy;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -99,9 +103,13 @@ final class InternalNotificationProjector
             $intent->attempts++;
             $intent->last_attempted_at = $attemptedAt;
             $event = InternalNotificationEvent::query()->lockForUpdate()->findOrFail($intent->event_id);
-            $application = $event->application()->select(['id', 'reference'])->firstOrFail();
+            $coordinationEvent = $this->payload->isCoordination($intent->notification_type);
+            $application = $event->application()->select($coordinationEvent
+                ? ['id', 'reference', 'applicant_id', 'reviewed_by'] : ['id', 'reference'])->firstOrFail();
+            $recipient = $intent->recipient_id === null ? null : $intent->recipient()->select($coordinationEvent
+                ? ['id', 'role', 'is_active', 'must_change_password'] : ['*'])->first();
 
-            if ($intent->recipient_id === null || $intent->recipient()->first() === null) {
+            if ($recipient === null) {
                 $intent->state = InternalNotificationProjectionState::Cancelled;
                 $intent->projected_at = $attemptedAt;
                 $intent->save();
@@ -110,7 +118,26 @@ final class InternalNotificationProjector
                 return InternalNotificationProjectionState::Cancelled;
             }
 
-            $data = $this->payload->build($intent->notification_type, $intent->notification_type === InternalNotificationType::CampaignFundingCompleted ? $event->reference : $application->reference);
+            if ($coordinationEvent) {
+                $linked = $application;
+                $coordination = AssistanceCoordination::query()->select(['id', 'help_application_id'])
+                    ->where('reference', $event->coordination_reference)->first();
+                $policy = app(AssistanceCoordinationPolicy::class);
+                $eligible = $linked && $coordination && $coordination->help_application_id === $linked->id && $recipient
+                    && ($intent->audience === InternalNotificationAudience::Applicant
+                        ? $policy->applicant($recipient, $linked)
+                        : ($policy->administer($recipient, $linked) && ($linked->reviewed_by === null
+                            ? $recipient->hasRole(UserRole::SuperAdmin) : $recipient->id === $linked->reviewed_by)));
+                if (! $eligible) {
+                    $intent->state = InternalNotificationProjectionState::Cancelled;
+                    $intent->projected_at = $attemptedAt;
+                    $intent->save();
+                    $this->finishEventIfTerminal($event, $attemptedAt);
+
+                    return InternalNotificationProjectionState::Cancelled;
+                }
+            }
+            $data = $this->payload->build($intent->notification_type, $coordinationEvent ? $event->coordination_reference : ($intent->notification_type === InternalNotificationType::CampaignFundingCompleted ? $event->reference : $application->reference));
             $notification = InternalNotification::query()->where('event_recipient_id', $intent->getKey())->first();
 
             if ($notification === null) {
@@ -121,7 +148,7 @@ final class InternalNotificationProjector
                 $notification->type = $intent->notification_type;
                 $notification->data = $data;
                 $notification->read_at = null;
-                $notification->created_at = $attemptedAt;
+                $notification->created_at = $coordinationEvent ? $event->occurred_at : $attemptedAt;
                 $notification->save();
             }
 

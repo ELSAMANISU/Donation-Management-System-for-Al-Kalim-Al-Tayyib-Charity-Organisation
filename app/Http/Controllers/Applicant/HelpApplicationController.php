@@ -33,6 +33,7 @@ class HelpApplicationController extends Controller
             ->forApplicant($request->user())
             ->where('open_slot', true)
             ->select(['id', 'reference', 'applicant_id', 'status', 'open_slot'])
+            ->with(['campaign' => fn ($query) => $query->select(['id', 'help_application_id', 'status', 'deleted_at'])])
             ->first();
 
         return view('applicant.help-applications.index', [

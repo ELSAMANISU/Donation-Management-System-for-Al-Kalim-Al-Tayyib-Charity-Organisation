@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\AuditLog;
 use App\Models\User;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
@@ -42,6 +43,7 @@ class AuditLogger
         ?array $oldValues = null,
         ?array $newValues = null,
         ?Request $request = null,
+        ?CarbonImmutable $createdAt = null,
     ): AuditLog {
         if (strlen($action) > 100 || ! preg_match('/\A[a-z][a-z0-9]*(?:_[a-z0-9]+)*(?:\.[a-z][a-z0-9]*(?:_[a-z0-9]+)*)+\z/', $action)) {
             throw new InvalidArgumentException('Audit action must be a canonical dot-delimited name.');
@@ -58,6 +60,9 @@ class AuditLogger
         $auditLog->new_values = $this->filterSensitiveValues($newValues);
         $auditLog->ip_address = $request?->ip();
         $auditLog->user_agent = $this->truncateUserAgent($request?->userAgent());
+        if ($createdAt !== null) {
+            $auditLog->created_at = $createdAt;
+        }
         $auditLog->save();
 
         return $auditLog;

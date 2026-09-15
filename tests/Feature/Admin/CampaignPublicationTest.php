@@ -55,6 +55,34 @@ class CampaignPublicationTest extends TestCase
         return [$actor, $campaign->fresh(), $application];
     }
 
+    public function test_other_administrator_can_publish_but_cannot_access_coordination(): void
+    {
+        [, $campaign, $application] = $this->fixture(true);
+        $other = User::factory()->admin()->create();
+        $this->actingAs($other);
+        $this->publish($campaign)->assertRedirect(route('admin.campaigns.index'));
+        $this->assertSame('active', $campaign->fresh()->status->value);
+        DB::table('campaigns')->where('id', $campaign->id)->update(['status' => 'funded', 'raised_amount' => $campaign->target_amount, 'funded_at' => now()]);
+        $this->get(route('admin.coordination.entry', ['helpApplication' => $application->reference]))->assertNotFound();
+        $this->post(route('admin.coordination.start', ['helpApplication' => $application->reference]))->assertNotFound();
+        $this->assertDatabaseCount('assistance_coordinations', 0);
+    }
+
+    public function test_ordinary_admin_can_publish_reviewer_null_but_coordination_requires_super_admin(): void
+    {
+        [$actor, $campaign, $application] = $this->fixture(true);
+        DB::table('help_applications')->where('id', $application->id)->update(['reviewed_by' => null]);
+        $this->actingAs($actor);
+        $this->publish($campaign)->assertRedirect(route('admin.campaigns.index'));
+        DB::table('campaigns')->where('id', $campaign->id)->update(['status' => 'funded', 'raised_amount' => $campaign->target_amount, 'funded_at' => now()]);
+        $this->get(route('admin.coordination.entry', ['helpApplication' => $application->reference]))->assertNotFound();
+        $this->post(route('admin.coordination.start', ['helpApplication' => $application->reference]))->assertNotFound();
+        $this->actingAs(User::factory()->superAdmin()->create())
+            ->post(route('admin.coordination.start', ['helpApplication' => $application->reference]))->assertRedirect();
+        $this->assertNull($application->fresh()->reviewed_by);
+        $this->assertDatabaseCount('assistance_coordinations', 1);
+    }
+
     private function publish(Campaign $campaign, array $input = [])
     {
         return $this->post(route('admin.campaigns.publish', $campaign), array_merge(['expires_at' => now()->addDay()->format('Y-m-d\TH:i:s')], $input));
