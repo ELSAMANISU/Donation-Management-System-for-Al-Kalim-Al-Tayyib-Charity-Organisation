@@ -52,10 +52,10 @@ Real payment processing, BigQuery, email notifications, and administrator specia
 - Allow both guest and registered donations without requiring guests to register.
 - Collect only the minimum guest information needed for a receipt.
 - Let donors display a public name, first name only, or remain anonymous.
-- Simulate `initiated`, `pending`, `completed`, `failed`, `cancelled`, and `refunded` transactions.
+- The current Sandbox Checkout Donation statuses are `pending`, `succeeded`, `failed`, `cancelled`, and `expired`. Only `succeeded` Donations fund campaigns. Refunds remain a later increment.
 - Assign every transaction a unique reference and provide a receipt that clearly states it is a sandbox simulation and no real money was processed.
 - Give registered donors a donation history and downloadable receipts.
-- Allow administrators to perform simulated refunds.
+- Simulated administrator refunds are deferred; they are not part of the current checkout or aid-delivery increment.
 
 ### Help applications
 
@@ -70,7 +70,7 @@ Real payment processing, BigQuery, email notifications, and administrator specia
 - After rejection, require the applicant to choose either to appeal the rejected application or to close it and submit a new application. The applicant cannot have an open appeal and a new open application at the same time, and opening a new application permanently ends the option to appeal the previous rejected application.
 - Detect possible duplicate or previous applications using verified identity information such as identity or passport number. Show reviewing administrators a warning and, when authorized, links to related applications; never reject automatically and require a documented administrator decision.
 - Keep application messages, information requests, responses, and files private.
-- Never expose the applicant's identity, contact details, private story, supporting documents, messages, receiving preference, actual receiving details, internal notes, or decision and appeal text publicly.
+- Never expose the applicant's identity, contact details, private story, supporting documents, messages, receiving preference, synthetic receiving instructions, internal notes, or decision and appeal text publicly.
 
 #### Applicant submission requirements
 
@@ -124,14 +124,15 @@ Real payment processing, BigQuery, email notifications, and administrator specia
 
 ### Aid delivery
 
-- Only after a campaign reaches 100% and becomes `funded`, allow an administrator to contact the beneficiary within the private system and request the actual receiving details needed for aid delivery.
-- Collect and store actual bank, wallet, cash, trusted-person, or other transfer details encrypted within the aid-delivery workflow. The beneficiary may confirm a method different from the earlier general preference.
-- Never expose actual receiving details publicly, copy them into public campaign content, or include them in audit payloads.
-- Allow aid to be recorded as one payment or multiple instalments.
-- For each delivery, store the amount, date, receiving method, internal transfer reference, private proof document, delivering administrator, and notes.
-- Track total raised, total delivered, and remaining balance.
-- Keep proof documents private.
-- Require recorded delivery and a published impact update before completion.
+- This increment is entirely academic and synthetic: request synthetic receiving instructions only after full campaign funding, store details encrypted, and retain the existing private plaintext delivery-method enum. Never collect real financial credentials, transfer evidence, or identity documents through coordination or delivery.
+- Only an eligible assigned reviewer or eligible super-admin administers delivery after confirmed coordination. The owning applicant may read their private status, amount, transitions, and system-generated sandbox proof; other administrators and the public have no access.
+- The first explicit start atomically changes Campaign from `funded` to `aid_delivery` and HelpApplication from `campaign_active` to `aid_delivery`, preserving the open application slot and existing funding/publication fields. Later delivery actions never rewrite the first delivery-start time.
+- Multiple positive SDG instalments are permitted, with exactly one unfinished instalment at most per coordination. States are `in_progress → simulated_delivered` (terminal) or `in_progress → problem → in_progress`. A problem requires an encrypted private explanation of 1–2000 UTF-8 characters; other transitions accept no notes.
+- Funding authority is the exact sum of `succeeded` Donations, reconciled against Campaign.raised_amount and the fully funded target. Delivered instalments alone reduce the undelivered assistance balance. Transactions and safe replay protection prevent duplicate financial effects.
+- Proof is an immutable private system-generated database record with opaque sandbox references and generator/version metadata. It is not an uploaded file, PDF, bank receipt, or claim of a real transfer. Amounts are resolved from the delivery, and method/details are never duplicated into delivery, proof, audit, or notification records.
+- Confirmed coordination is read-only and remains privately readable during aid delivery and historical states, including after category/content inactivity. New delivery mutations require fresh full coherence and eligible participants. Audit values contain status/state only; outbox notifications contain delivery UUID and canonical action only.
+- Every delivery/proof page states: “Academic sandbox — no real financial transaction or aid transfer occurred.”
+- Refunds, real transfers, external providers, uploads, applicant acknowledgements/disputes, cancellation shortcuts, completion, and public impact publishing are outside this increment. Existing expiry, Campaign publication authorization, and later completion conflicts remain deferred and unchanged.
 
 ### User, category, notification, audit, and settings administration
 
@@ -139,7 +140,7 @@ Real payment processing, BigQuery, email notifications, and administrator specia
 - Reserve administrator-account management for super administrators.
 - Store Arabic and English category names and descriptions, icon, image, display order, active or hidden state, soft-deletion state, and restoration state.
 - Prevent permanent deletion of a category that has campaigns unless those campaigns are handled safely.
-- Provide internal notifications for new application submission, submission confirmation, review started, information or additional-document requests, applicant responses or document uploads, approval or rejection, appeals, campaign conversion or activation, campaign funding, requests for actual receiving details, aid delivery, and completion, as well as relevant donation events.
+- Provide internal notifications for new application submission, submission confirmation, review started, information or additional-document requests, applicant responses or document uploads, approval or rejection, appeals, campaign conversion or activation, campaign funding, requests for synthetic receiving instructions, aid delivery, and completion, as well as relevant donation events.
 - Audit important user and administrator actions.
 - Provide settings for organisation identity, logo, contact details, currency, minimum donation, upload limits, and whether help applications are open.
 
@@ -151,9 +152,9 @@ Real payment processing, BigQuery, email notifications, and administrator specia
 2. If the requested amount exceeds the remaining target, the system offers only the remaining required amount.
 3. The donor provides the required receipt information and chooses their public identity display.
 4. Sandbox Checkout records one idempotent transaction with a unique reference and a simulated outcome.
-5. Only a completed transaction increases the campaign total. Duplicate submission must not create a second financial effect.
+5. Only a `succeeded` Donation increases the campaign total. Duplicate submission must not create a second financial effect.
 6. Reaching the target changes the campaign to funded and closes it to further donations.
-7. Before aid delivery begins, a simulated refund reverses the completed contribution correctly within a database transaction and returns a `funded` campaign to `active` if its raised amount falls below the target. After aid delivery begins, ordinary refunds are prohibited and any exceptional correction is processed as a separately audited administrative adjustment.
+7. Before aid delivery begins, a simulated refund (deferred) reverses the `succeeded` contribution correctly within a database transaction and returns a `funded` campaign to `active` if its raised amount falls below the target. After aid delivery begins, ordinary refunds are prohibited and any exceptional correction is processed as a separately audited administrative adjustment.
 
 ### Applicant and beneficiary workflow
 
@@ -170,9 +171,9 @@ Real payment processing, BigQuery, email notifications, and administrator specia
 1. An administrator prepares a draft campaign from an approved application.
 2. Publishing sets the campaign status to `active`, stores the publication time separately in `published_at`, exposes its database-generated card, and accepts donations until paused, cancelled, or fully funded.
 3. Funding completion changes its status automatically.
-4. Only after the campaign is 100% funded, an administrator requests actual receiving details from the beneficiary within the private system. The encrypted details may differ from the earlier general preference and remain excluded from public content and audit payloads.
-5. An administrator records one or more private, auditable aid deliveries.
-6. After delivery, an administrator publishes a privacy-safe impact update.
+4. Only after the campaign is 100% funded, an administrator requests synthetic receiving instructions from the beneficiary within the private system. The encrypted details may differ from the earlier general preference and remain excluded from public content and audit payloads.
+5. An eligible administrator records one or more private, auditable simulated aid deliveries after confirmed coordination.
+6. In a later increment after delivery, an administrator publishes a privacy-safe impact update.
 7. The campaign can be completed only after delivery is recorded and the impact update is published.
 
 ## 5. Status lifecycles
@@ -200,21 +201,21 @@ The canonical campaign statuses are `draft`, `active`, `paused`, `funded`, `aid_
 
 ### Transaction statuses
 
-The canonical Sandbox transaction statuses are `initiated`, `pending`, `completed`, `failed`, `cancelled`, and `refunded`. Only `completed` transactions count toward raised totals. Before aid delivery begins, refunds must correctly reverse the applicable contribution and return a `funded` campaign to `active` automatically if its raised amount falls below the target. After aid delivery begins, ordinary simulated refunds are prohibited; any exceptional financial correction must be a separately audited administrative adjustment that preserves the rule that delivered aid never exceeds valid raised funds.
+The current canonical Sandbox Donation statuses are `pending`, `succeeded`, `failed`, `cancelled`, and `expired`. Only `succeeded` Donations count toward raised totals. The following refund rules are deferred to a later increment. Before aid delivery begins, refunds must correctly reverse the applicable contribution and return a `funded` campaign to `active` automatically if its raised amount falls below the target. After aid delivery begins, ordinary simulated refunds are prohibited; any exceptional financial correction must be a separately audited administrative adjustment that preserves the rule that delivered aid never exceeds valid raised funds.
 
 ## 6. Business rules
 
 - Use MySQL/MariaDB as the operational database and SDG / ج.س as the primary currency.
-- Public campaign content must be prepared separately by an administrator and remain privacy-safe. The applicant's private story is not the campaign's public story, and identity, contact details, documents, messages, receiving preference, actual receiving details, internal notes, and decision or appeal text must never appear publicly.
+- Public campaign content must be prepared separately by an administrator and remain privacy-safe. The applicant's private story is not the campaign's public story, and identity, contact details, documents, messages, receiving preference, synthetic receiving instructions, internal notes, and decision or appeal text must never appear publicly.
 - Applicants do not select or submit categories. An authorized administrator assigns an active category after reviewing the private application and documents, and client-supplied category identifiers must never control assignment.
 - Draft applications may temporarily have no supporting documents, but submission requires at least one active, present, fully validated document with a selected purpose that is eligible under the approved security policy. Multiple documents are permitted; all remain private and never become campaign files automatically.
 - The first version explicitly accepts structurally validated supporting documents without antivirus or malware scanning and records them as `accepted_unscanned`, never `clean`. This limitation must remain visible and replaceable by future scanning.
-- At application time, collect only a general free-text receiving preference, not bank, account, card, wallet, trusted-person account, or other transfer-destination details. Request and encrypt actual receiving details only after the associated campaign is fully funded.
+- At application time, collect only a general free-text receiving preference, not bank, account, card, wallet, trusted-person account, or other transfer-destination details. Request and encrypt synthetic receiving instructions only after the associated campaign is fully funded.
 - A user can have only one open application at a time. An open appeal and a new open application cannot coexist, and opening a new application ends eligibility to appeal the previous rejected application.
 - On submission, compare verified identity information such as identity or passport number to detect possible duplicate or previous applications. A match creates an administrator-visible warning and authorized links to related applications, but never an automatic rejection; the administrator must document the decision.
 - Campaigns do not require an expiry date.
 - A published campaign has status `active`, with its publication time stored separately in `published_at`.
-- Campaign totals derive only from completed transactions, adjusted by valid refunds.
+- Campaign totals currently derive only from `succeeded` Donations; valid refund adjustments are deferred.
 - Each transaction reference is unique; payment and refund actions are idempotent.
 - Before aid delivery begins, a refund that reduces a funded campaign below its target automatically returns it from `funded` to `active`.
 - After aid delivery begins, ordinary simulated refunds are prohibited. Exceptional financial corrections require separately audited administrative adjustments, and delivered aid must never exceed valid raised funds.
@@ -239,7 +240,7 @@ The canonical Sandbox transaction statuses are `initiated`, `pending`, `complete
 - Before an authorized user deliberately downloads an `accepted_unscanned` document, place this conspicuous warning immediately before or directly beside the download control: "Security notice: This document passed structural validation but has not been scanned for malware. Download and open it only on a protected, fully updated device. / تنبيه أمني: اجتاز هذا المستند التحقق البنيوي، لكنه لم يُفحص من البرمجيات الخبيثة. قم بتنزيله وفتحه فقط على جهاز محمي ومحدّث بالكامل." Never start the download automatically or describe the file as safe, verified clean, virus-free, or malware-free. Authorization, application/document ownership checks, dedicated private storage, generic download filenames, private `no-store` caching, `nosniff`, and restrictive response headers remain mandatory; first-version PDFs remain attachment-only and must neither open automatically nor render inline.
 - Never place document bytes, original filenames, paths, hashes, MIME details, purpose, size, or request payloads in audit values.
 - Treat document uploads as immutable. Commit logical removal first, delete only validated managed bytes after commit using best-effort cleanup, preserve tombstone metadata, and never restore removal merely because leftover bytes remain.
-- Store actual receiving details encrypted and restrict them to the private aid-delivery workflow after campaign funding. Never place them in public content or audit payloads; when an authorized interface displays an identifier, show only a masked form.
+- Store synthetic receiving instructions encrypted and restrict them to the private aid-delivery workflow after campaign funding. Never place them in public content or audit payloads; when an authorized interface displays an identifier, show only a masked form.
 - Never store full card numbers, CVV, or real payment details.
 - Rate-limit sensitive actions.
 - Use database transactions for financial state changes and idempotency controls for sandbox payments and refunds.
@@ -258,7 +259,7 @@ Administrators must be able to view and download relevant reports as PDF and CSV
 - Total donations.
 - Donations by period and category.
 - Active, funded, completed, paused, and cancelled campaigns.
-- Successful/completed, pending, failed, cancelled, and refunded transactions.
+- `succeeded`, pending, failed, cancelled, and expired Donations; refunded transactions belong to the later refund increment.
 - Applications grouped by status.
 - Total raised, delivered, and remaining.
 

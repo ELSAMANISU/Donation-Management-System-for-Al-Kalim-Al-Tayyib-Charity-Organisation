@@ -45,6 +45,10 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->respond(function ($response) {
             if (PrivateCoordinationResponse::applies(request())) {
+                if (request()->is('admin/aid-delivery/*', 'help-applications/*/aid-delivery/*') && $response->getStatusCode() >= 400) {
+                    $response = response('Private sandbox delivery is unavailable. / التسليم التجريبي الخاص غير متاح.', $response->getStatusCode());
+                }
+                $response->headers->set('X-Robots-Tag', 'noindex, nofollow');
                 $response->headers->set('Cache-Control', 'no-store, private');
                 $response->headers->set('Pragma', 'no-cache');
                 $response->headers->set('Referrer-Policy', 'no-referrer');
@@ -87,5 +91,5 @@ return Application::configure(basePath: dirname(__DIR__))
 
             return $response;
         });
-        $exceptions->dontFlash(['idempotency_token', 'identity_document_number', 'document', 'purpose', 'consent', 'resolution_note', 'decision_note', 'body', 'delivery_details']);
+        $exceptions->dontFlash(['amount', 'note', 'entry_key', 'idempotency_token', 'identity_document_number', 'document', 'purpose', 'consent', 'resolution_note', 'decision_note', 'body', 'delivery_details']);
     })->create();

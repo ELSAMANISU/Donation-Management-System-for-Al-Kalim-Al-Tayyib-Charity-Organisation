@@ -33,7 +33,7 @@ final class AssistanceCoordinationService
      * Publication, conversion, decisions and settlement serialize on Application first.
      * Encrypted details and message bodies are never selected by mutation/readiness locks.
      */
-    private function lock(User $actor, string $applicationReference, ?string $coordinationReference, bool $administrator): array
+    private function lock(User $actor, string $applicationReference, ?string $coordinationReference, bool $administrator, bool $historical = false): array
     {
         $application = HelpApplication::query()->select(self::APPLICATION_FIELDS)
             ->selectRaw('CASE WHEN decision_note IS NOT NULL AND decision_note <> ? THEN 1 ELSE 0 END AS has_decision_note', [''])
@@ -53,7 +53,6 @@ final class AssistanceCoordinationService
         abort_unless($campaigns->count() === 1, 404);
         $campaign = $campaigns->first();
         $category = Category::withTrashed()->select(['id', 'is_active', 'deleted_at'])->whereKey($campaign->category_id)->lockForUpdate()->first();
-        abort_unless($this->coherent($application, $campaign, $category), 404);
         $coordination = AssistanceCoordination::query()->select(self::COORDINATION_FIELDS)
             ->selectRaw('CASE WHEN delivery_details IS NOT NULL THEN 1 ELSE 0 END AS has_delivery_details')
             ->where('help_application_id', $application->id)->lockForUpdate()->first();
@@ -62,7 +61,25 @@ final class AssistanceCoordinationService
         }
         abort_if($coordination && $coordination->campaign_id !== $campaign->id, 404);
 
+        abort_unless(($historical && $this->historicallyCoherent($application, $campaign, $coordination))
+            || $this->coherent($application, $campaign, $category), 404);
+
         return [$application, $freshActor, $campaign, $coordination, $users];
+    }
+
+    public function historicallyCoherent(HelpApplication $application, Campaign $campaign, ?AssistanceCoordination $coordination): bool
+    {
+        return $coordination && $coordination->getRawOriginal('state') === 'confirmed'
+            && $coordination->confirmed_by !== null && $coordination->getRawOriginal('confirmed_at') !== null
+            && $coordination->help_application_id === $application->id && $coordination->campaign_id === $campaign->id
+            && $campaign->help_application_id === $application->id && $application->category_id === $campaign->category_id
+            && match ($campaign->getRawOriginal('status')) {
+                'funded' => $application->getRawOriginal('status') === 'campaign_active',
+                'aid_delivery' => $application->getRawOriginal('status') === 'aid_delivery',
+                'completed' => $application->getRawOriginal('status') === 'completed',
+                'cancelled' => $application->getRawOriginal('status') === 'closed',
+                default => false,
+            };
     }
 
     private function coherent(HelpApplication $application, Campaign $campaign, ?Category $category): bool
@@ -117,7 +134,7 @@ final class AssistanceCoordinationService
     public function detail(User $actor, string $applicationReference, ?string $coordinationReference, bool $administrator, int $page = 1): array
     {
         return DB::transaction(function () use ($actor, $applicationReference, $coordinationReference, $administrator, $page) {
-            [$application, , , $coordination] = $this->lock($actor, $applicationReference, $coordinationReference, $administrator);
+            [$application, , , $coordination] = $this->lock($actor, $applicationReference, $coordinationReference, $administrator, true);
             $messages = null;
             $details = null;
             if ($coordination) {

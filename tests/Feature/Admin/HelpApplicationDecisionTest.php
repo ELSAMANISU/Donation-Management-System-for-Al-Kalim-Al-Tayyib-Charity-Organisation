@@ -506,7 +506,7 @@ class HelpApplicationDecisionTest extends TestCase
             }
         }
         $keys = array_map(fn ($type) => app(InternalNotificationEventKey::class)->make($type, 42), InternalNotificationEventType::cases());
-        $this->assertCount(10, array_unique($keys));
+        $this->assertCount(14, array_unique($keys));
     }
 
     public function test_ready_form_has_one_csrf_form_blank_note_enabled_first_placeholder_and_no_initial_error_aria(): void

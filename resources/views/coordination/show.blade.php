@@ -45,6 +45,9 @@
             @endif
         </div>
 
+        @if($coordination?->state === \App\Enums\AssistanceCoordinationState::Confirmed)
+            <a class="text-indigo-700 underline" href="{{ route($administrator ? 'admin.aid-delivery.index' : 'help-applications.aid-delivery.index', $params) }}">Private sandbox delivery history / <span lang="ar" dir="rtl">سجل التسليم التجريبي الخاص</span></a>
+        @endif
         @if(!$coordination)
             <section aria-labelledby="not-started-heading" class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
                 <h2 id="not-started-heading" class="text-lg font-semibold text-gray-900">

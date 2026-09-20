@@ -7,6 +7,17 @@ use InvalidArgumentException;
 
 final class InternalNotificationPayload
 {
+    public function isDelivery(InternalNotificationType $type): bool
+    {
+        return in_array($type, [InternalNotificationType::AidDeliveryStarted, InternalNotificationType::AidDeliveryProblemRecorded,
+            InternalNotificationType::AidDeliveryResumed, InternalNotificationType::AidDeliverySimulatedDelivered], true);
+    }
+
+    private function deliveryAction(InternalNotificationType $type): string
+    {
+        return substr($type->value, strlen('aid_delivery_'));
+    }
+
     public function isCoordination(InternalNotificationType $type): bool
     {
         return in_array($type, [InternalNotificationType::CoordinationStarted, InternalNotificationType::CoordinationResponseSubmitted,
@@ -16,6 +27,9 @@ final class InternalNotificationPayload
     /** @return array<string, string> */
     public function build(InternalNotificationType $type, string $applicationReference): array
     {
+        if ($this->isDelivery($type)) {
+            return $this->validate($type, ['delivery_reference' => $applicationReference, 'action' => $this->deliveryAction($type)]);
+        }
         if ($this->isCoordination($type)) {
             return $this->validateCoordination($type, ['coordination_reference' => $applicationReference, 'state' => $this->coordinationState($type)]);
         }
@@ -32,6 +46,15 @@ final class InternalNotificationPayload
     /** @return array<string, string> */
     public function validate(InternalNotificationType $type, mixed $payload): array
     {
+        if ($this->isDelivery($type)) {
+            if (! is_array($payload) || count($payload) !== 2 || ! is_string($payload['delivery_reference'] ?? null)
+                || preg_match('/\A[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\z/', $payload['delivery_reference']) !== 1
+                || ($payload['action'] ?? null) !== $this->deliveryAction($type)) {
+                throw $this->invalid();
+            }
+
+            return ['delivery_reference' => $payload['delivery_reference'], 'action' => $payload['action']];
+        }
         if ($this->isCoordination($type)) {
             return $this->validateCoordination($type, $payload);
         }

@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\HelpApplicationDecisionController;
 use App\Http\Controllers\Admin\HelpApplicationDuplicateWarningController;
 use App\Http\Controllers\Admin\InReviewHelpApplicationController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
+use App\Http\Controllers\AidDeliveryController;
 use App\Http\Controllers\Applicant\HelpApplicationController;
 use App\Http\Controllers\Applicant\HelpApplicationDocumentController;
 use App\Http\Controllers\AssistanceCoordinationController;
@@ -161,6 +162,23 @@ Route::prefix('{locale}')->whereIn('locale', ['ar', 'en'])->name('donations.')->
     Route::post('/donations/{donation}/outcome/{action}/{capability?}', 'outcome')->where('donation', '[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}')->whereIn('action', ['success', 'failure', 'cancellation'])->where('capability', '[0-9a-f]{64}')->middleware('throttle:donation-outcome')->name('outcome');
     Route::get('/donations/{donation}/result/{capability?}', 'show')->where('donation', '[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}')->where('capability', '[0-9a-f]{64}')->middleware('throttle:donation-result')->name('show');
 });
+
+// Delivery is private, UUID-bound, and applicant reads have no mutation routes.
+foreach (['admin' => ['admin/aid-delivery', 'admin.aid-delivery.', 'admin,super_admin'],
+    'applicant' => ['help-applications', 'help-applications.aid-delivery.', 'user']] as $side => [$prefix, $name, $role]) {
+    Route::prefix($prefix)->name($name)->middleware([EnsureCoordinationAccount::class, 'auth', 'role:'.$role])
+        ->group(function () use ($side) {
+            $entry = $side === 'admin' ? '/{helpApplication}/{coordination}' : '/{helpApplication}/aid-delivery/{coordination}';
+            Route::get($entry, [AidDeliveryController::class, 'show'])->whereUuid(['helpApplication', 'coordination'])->middleware('throttle:aid-delivery-read')->name('index');
+            Route::get($entry.'/{delivery}', [AidDeliveryController::class, 'show'])->whereUuid(['helpApplication', 'coordination', 'delivery'])->middleware('throttle:aid-delivery-read')->name('show');
+            if ($side === 'admin') {
+                foreach (['start', 'problem', 'resume', 'success'] as $action) {
+                    Route::post($entry.($action === 'start' ? '' : '/{delivery}').'/'.$action, [AidDeliveryController::class, 'mutate'])
+                        ->whereUuid(['helpApplication', 'coordination', 'delivery'])->middleware('throttle:aid-delivery-'.$action)->name($action);
+                }
+            }
+        });
+}
 
 // Private coordination uses UUID references and its own stricter authorization.
 foreach (['admin' => ['admin/assistance-coordination', 'admin.coordination.', 'admin,super_admin'],

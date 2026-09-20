@@ -4,6 +4,10 @@ namespace App\Enums;
 
 enum InternalNotificationEventType: string
 {
+    case AidDeliveryStarted = 'aid_delivery_started';
+    case AidDeliveryProblemRecorded = 'aid_delivery_problem_recorded';
+    case AidDeliveryResumed = 'aid_delivery_resumed';
+    case AidDeliverySimulatedDelivered = 'aid_delivery_simulated_delivered';
     case CoordinationStarted = 'coordination_started';
     case CoordinationResponseSubmitted = 'coordination_response_submitted';
     case CoordinationChangesRequested = 'coordination_changes_requested';

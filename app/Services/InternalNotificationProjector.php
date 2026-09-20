@@ -7,10 +7,12 @@ use App\Enums\InternalNotificationAudience;
 use App\Enums\InternalNotificationProjectionState;
 use App\Enums\InternalNotificationType;
 use App\Enums\UserRole;
+use App\Models\AidDelivery;
 use App\Models\AssistanceCoordination;
 use App\Models\InternalNotification;
 use App\Models\InternalNotificationEvent;
 use App\Models\InternalNotificationEventRecipient;
+use App\Policies\AidDeliveryPolicy;
 use App\Policies\AssistanceCoordinationPolicy;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -103,10 +105,11 @@ final class InternalNotificationProjector
             $intent->attempts++;
             $intent->last_attempted_at = $attemptedAt;
             $event = InternalNotificationEvent::query()->lockForUpdate()->findOrFail($intent->event_id);
+            $deliveryEvent = $this->payload->isDelivery($intent->notification_type);
             $coordinationEvent = $this->payload->isCoordination($intent->notification_type);
-            $application = $event->application()->select($coordinationEvent
+            $application = $event->application()->select(($deliveryEvent || $coordinationEvent)
                 ? ['id', 'reference', 'applicant_id', 'reviewed_by'] : ['id', 'reference'])->firstOrFail();
-            $recipient = $intent->recipient_id === null ? null : $intent->recipient()->select($coordinationEvent
+            $recipient = $intent->recipient_id === null ? null : $intent->recipient()->select(($deliveryEvent || $coordinationEvent)
                 ? ['id', 'role', 'is_active', 'must_change_password'] : ['*'])->first();
 
             if ($recipient === null) {
@@ -118,6 +121,20 @@ final class InternalNotificationProjector
                 return InternalNotificationProjectionState::Cancelled;
             }
 
+            if ($deliveryEvent) {
+                $delivery = AidDelivery::query()->select(['id', 'coordination_id'])->where('reference', $event->delivery_reference)->first();
+                $linked = $delivery ? AssistanceCoordination::query()->select(['id', 'help_application_id'])->find($delivery->coordination_id) : null;
+                if (! $linked || $linked->help_application_id !== $application->id
+                    || $intent->audience !== InternalNotificationAudience::Applicant
+                    || ! app(AidDeliveryPolicy::class)->applicant($recipient, $application)) {
+                    $intent->state = InternalNotificationProjectionState::Cancelled;
+                    $intent->projected_at = $attemptedAt;
+                    $intent->save();
+                    $this->finishEventIfTerminal($event, $attemptedAt);
+
+                    return InternalNotificationProjectionState::Cancelled;
+                }
+            }
             if ($coordinationEvent) {
                 $linked = $application;
                 $coordination = AssistanceCoordination::query()->select(['id', 'help_application_id'])
@@ -137,7 +154,7 @@ final class InternalNotificationProjector
                     return InternalNotificationProjectionState::Cancelled;
                 }
             }
-            $data = $this->payload->build($intent->notification_type, $coordinationEvent ? $event->coordination_reference : ($intent->notification_type === InternalNotificationType::CampaignFundingCompleted ? $event->reference : $application->reference));
+            $data = $this->payload->build($intent->notification_type, $deliveryEvent ? $event->delivery_reference : ($coordinationEvent ? $event->coordination_reference : ($intent->notification_type === InternalNotificationType::CampaignFundingCompleted ? $event->reference : $application->reference)));
             $notification = InternalNotification::query()->where('event_recipient_id', $intent->getKey())->first();
 
             if ($notification === null) {
@@ -148,7 +165,7 @@ final class InternalNotificationProjector
                 $notification->type = $intent->notification_type;
                 $notification->data = $data;
                 $notification->read_at = null;
-                $notification->created_at = $coordinationEvent ? $event->occurred_at : $attemptedAt;
+                $notification->created_at = ($deliveryEvent || $coordinationEvent) ? $event->occurred_at : $attemptedAt;
                 $notification->save();
             }
 

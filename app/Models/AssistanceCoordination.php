@@ -15,7 +15,7 @@ class AssistanceCoordination extends Model
     protected $guarded = ['*'];
 
     // A whitelist also hides any dynamically loaded relationships or selected aliases.
-    protected $hidden = ['id', 'help_application_id', 'campaign_id', 'revision', 'delivery_method', 'delivery_details', 'started_by', 'confirmed_by', 'application', 'campaign', 'messages', 'transitions'];
+    protected $hidden = ['id', 'help_application_id', 'campaign_id', 'revision', 'delivery_method', 'delivery_details', 'started_by', 'confirmed_by', 'application', 'campaign', 'messages', 'transitions', 'deliveries'];
 
     protected $visible = ['reference', 'state', 'started_at', 'confirmed_at'];
 
@@ -43,6 +43,11 @@ class AssistanceCoordination extends Model
     public function messages(): HasMany
     {
         return $this->hasMany(AssistanceCoordinationMessage::class, 'coordination_id');
+    }
+
+    public function deliveries(): HasMany
+    {
+        return $this->hasMany(AidDelivery::class, 'coordination_id');
     }
 
     public function transitions(): HasMany
