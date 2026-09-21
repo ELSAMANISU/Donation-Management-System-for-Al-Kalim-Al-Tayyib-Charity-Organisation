@@ -73,6 +73,7 @@ final class InternalNotificationPayload
             InternalNotificationType::HelpApplicationApproved,
             InternalNotificationType::HelpApplicationRejected,
             InternalNotificationType::HelpApplicationCampaignActivated,
+            InternalNotificationType::HelpApplicationCompleted,
         ], true) || ! is_array($payload) || array_is_list($payload) || count($payload) !== 2) {
             throw $this->invalid();
         }
@@ -100,6 +101,7 @@ final class InternalNotificationPayload
     {
         return match ($type) {
             InternalNotificationType::HelpApplicationCampaignActivated => 'campaign_active',
+            InternalNotificationType::HelpApplicationCompleted => 'completed',
             InternalNotificationType::HelpApplicationApproved => 'approved',
             InternalNotificationType::HelpApplicationRejected => 'rejected',
             InternalNotificationType::HelpApplicationSubmissionConfirmation,

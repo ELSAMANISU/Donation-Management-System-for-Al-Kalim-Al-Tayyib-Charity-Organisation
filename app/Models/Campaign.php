@@ -19,7 +19,7 @@ class Campaign extends Model
     /** @use HasFactory<CampaignFactory> */
     use HasFactory, SoftDeletes;
 
-    protected $hidden = ['help_application_id', 'helpApplication', 'donations', 'coordination'];
+    protected $hidden = ['help_application_id', 'helpApplication', 'donations', 'coordination', 'impact_update_ar', 'impact_update_en'];
 
     public function coordination(): HasOne
     {
@@ -96,6 +96,7 @@ class Campaign extends Model
             'funded_at' => 'immutable_datetime',
             'aid_delivery_started_at' => 'immutable_datetime',
             'completed_at' => 'immutable_datetime',
+            'impact_published_at' => 'immutable_datetime',
             'cancelled_at' => 'immutable_datetime',
             'deleted_at' => 'immutable_datetime',
         ];

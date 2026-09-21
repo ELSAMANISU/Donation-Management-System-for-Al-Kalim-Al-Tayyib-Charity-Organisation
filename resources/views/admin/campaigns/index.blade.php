@@ -43,6 +43,9 @@
 <a class="text-indigo-600 underline" href="{{ route('admin.aid-delivery.index', ['helpApplication' => $campaign->helpApplication->reference, 'coordination' => $campaign->coordination->reference]) }}">Private delivery history / <span lang="ar" dir="rtl">سجل التسليم الخاص</span></a>
 @endif
 @endif
+@if($campaign->status === \App\Enums\CampaignStatus::Completed && auth()->user()->can('publishImpact', $campaign))
+<a class="text-indigo-600 underline" href="{{ route('admin.campaigns.impact.edit', $campaign) }}">Public impact / الأثر العام</a>
+@endif
 </td></tr>
                     @endforeach
                     </tbody></table></div>

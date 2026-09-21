@@ -28,7 +28,7 @@ class EnsureUserHasRole
             || in_array(null, $allowedRoles, true)
             || ! $user->hasAnyRole($allowedRoles)
         ) {
-            abort(403);
+            abort($request->routeIs('admin.campaigns.impact.*') ? 404 : 403);
         }
 
         return $next($request);

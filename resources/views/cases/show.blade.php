@@ -404,6 +404,9 @@
 <section id="casesSection"><div class="container"><div class="row g-4">
 <article class="col-lg-8"><img class="img-fluid" src="{{ route('cases.image', ['locale'=>$locale, 'campaign'=>$case->slug]) }}" alt="{{ $case->{'image_alt_'.$locale} }}">
 <h2 class="mt-4">{{ $case->{'title_'.$locale} }}</h2><p>{{ $case->{'summary_'.$locale} }}</p><p style="white-space: pre-line">{{ $case->{'story_'.$locale} }}</p></article>
+@if($case->status === \App\Enums\CampaignStatus::Completed && $case->impact_published_at && $case->public_impact)
+<section class="col-12" aria-label="{{ $locale === 'ar' ? 'الأثر المنشور' : 'Published impact' }}"><h2>{{ $locale === 'ar' ? 'الأثر المنشور' : 'Published impact' }}</h2><p style="white-space: pre-line">{{ $case->public_impact }}</p></section>
+@endif
 <aside class="col-lg-4"><div class="case-card"><div class="case-body">
 @include('cases.progress')
 <p>{{ $locale === 'ar' ? 'تاريخ النشر' : 'Published' }}: <time datetime="{{ $case->published_at->toIso8601String() }}">{{ $case->published_at->format('Y-m-d H:i') }}</time></p>

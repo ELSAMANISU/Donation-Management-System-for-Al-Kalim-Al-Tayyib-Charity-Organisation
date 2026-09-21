@@ -155,6 +155,69 @@ final class AidDeliveryService
         return $sum;
     }
 
+    public function complete(User $actor, string $applicationReference, string $coordinationReference, int $expectedRevision): void
+    {
+        DB::transaction(function () use ($actor, $applicationReference, $coordinationReference, $expectedRevision): void {
+            $context = $this->lock($actor, $applicationReference, $coordinationReference, true);
+            abort_unless($this->ready($context), 404);
+            extract($context);
+            abort_unless($coordination->revision === $expectedRevision && $deliveries->isNotEmpty()
+                && $deliveries->every(fn ($delivery) => $delivery->state === State::SimulatedDelivered
+                    && $delivery->unfinished_coordination_id === null)
+                && $proofs->count() === $deliveries->count(), 404);
+            foreach ($deliveries as $delivery) {
+                $history = $transitions->where('delivery_id', $delivery->id)->sortBy('revision')->values();
+                $previous = null;
+                foreach ($history as $index => $transition) {
+                    abort_unless($transition->revision === $index + 1
+                        && $transition->created_at !== null && ! $transition->created_at->isFuture()
+                        && ($previous === null || $transition->created_at->gte($previous)), 404);
+                    $previous = $transition->created_at;
+                }
+                abort_unless($history->isNotEmpty() && $history->first()->created_at->equalTo($delivery->started_at)
+                    && $history->last()->created_at->equalTo($delivery->completed_at)
+                    && $delivery->started_at->gte($coordination->confirmed_at), 404);
+            }
+            $funding = $this->funding($campaign);
+            $target = CampaignApplicationAmount::canonical((string) $campaign->getRawOriginal('target_amount'));
+            abort_unless($target !== null && $funding->isEqualTo($target)
+                && $funding->isEqualTo($this->delivered($deliveries)), 404);
+            $timestamp = CarbonImmutable::now(config('app.timezone'))->startOfSecond();
+            abort_unless($deliveries->every(fn ($delivery) => $delivery->completed_at->lte($timestamp)), 404);
+            $campaign->status = 'completed';
+            $campaign->completed_at = $timestamp;
+            $campaign->updated_by = $actor->id;
+            $campaign->updated_at = $timestamp;
+            $campaign->timestamps = false;
+            $campaign->save();
+            $application->status = 'completed';
+            $application->open_slot = null;
+            $application->status_changed_at = $timestamp;
+            $application->updated_by = $actor->id;
+            $application->updated_at = $timestamp;
+            $application->timestamps = false;
+            $application->save();
+            $this->audit->log('campaign.completed', actor: $actor, subject: $campaign,
+                oldValues: ['status' => 'aid_delivery'], newValues: ['status' => 'completed'], createdAt: $timestamp);
+            $this->audit->log('help_application.completed', actor: $actor, subject: $application,
+                oldValues: ['status' => 'aid_delivery', 'open_slot' => true],
+                newValues: ['status' => 'completed', 'open_slot' => null], createdAt: $timestamp);
+            app(AssistanceCompletionNotifications::class)->record($application, $users, $timestamp);
+        });
+    }
+
+    public function completionRevision(User $actor, string $application, string $coordination): ?int
+    {
+        return DB::transaction(function () use ($actor, $application, $coordination): ?int {
+            $context = $this->lock($actor, $application, $coordination, true);
+
+            return $this->ready($context) && $context['deliveries']->isNotEmpty()
+                && $context['deliveries']->every(fn ($delivery) => $delivery->state === State::SimulatedDelivered)
+                && $this->funding($context['campaign'])->isEqualTo($this->delivered($context['deliveries']))
+                ? $context['coordination']->revision : null;
+        });
+    }
+
     public function detail(User $actor, string $application, string $coordination, bool $administrator): array
     {
         return DB::transaction(function () use ($actor, $application, $coordination, $administrator) {

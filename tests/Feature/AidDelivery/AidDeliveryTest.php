@@ -41,6 +41,50 @@ class AidDeliveryTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_full_ledger_completes_once_and_releases_the_application_slot(): void
+    {
+        $f = $this->fixture();
+        $first = $this->start($f, '400.20');
+        $this->transition($f, $first, 'success');
+        $second = $this->start($f, '600.30');
+        $this->transition($f, $second, 'success');
+        $this->actingAs($f[0]);
+        $token = $this->get($this->url($f))->viewData('completionToken');
+        $this->assertNotNull($token);
+        $this->post($this->url($f, 'complete'), ['completion_token' => $token])->assertRedirect();
+        $campaign = $f[3]->fresh();
+        $application = $f[2]->fresh();
+        $this->assertSame('completed', $campaign->getRawOriginal('status'));
+        $this->assertSame('completed', $application->getRawOriginal('status'));
+        $this->assertNull($application->open_slot);
+        $this->assertTrue($campaign->completed_at->equalTo($application->status_changed_at));
+        $this->assertDatabaseHas('internal_notification_events', ['help_application_id' => $application->id, 'type' => 'help_application_completed']);
+        $audits = AuditLog::whereIn('action', ['campaign.completed', 'help_application.completed'])->count();
+        $this->assertSame(2, $audits);
+        $this->post($this->url($f, 'complete'), ['completion_token' => $token])->assertNotFound();
+        $this->assertSame($audits, AuditLog::whereIn('action', ['campaign.completed', 'help_application.completed'])->count());
+        $this->get($this->url($f))->assertOk()->assertDontSee('name="completion_token"', false);
+        $this->actingAs($f[1])->get($this->url($f, admin: false))->assertOk();
+        $this->get(route('help-applications.create'))->assertOk();
+    }
+
+    public function test_completion_rejects_unfinished_and_unreconciled_ledgers_without_parent_writes(): void
+    {
+        $f = $this->fixture();
+        $first = $this->start($f, '400.20');
+        $this->actingAs($f[0]);
+        $this->assertNull($this->get($this->url($f))->viewData('completionToken'));
+        $this->assertSame('aid_delivery', $f[3]->fresh()->getRawOriginal('status'));
+        $this->transition($f, $first, 'success');
+        $this->assertNull($this->get($this->url($f))->viewData('completionToken'));
+        $second = $this->start($f, '600.30');
+        $this->transition($f, $second, 'success');
+        DB::table('donations')->where('campaign_id', $f[3]->id)->update(['amount' => '1000.49']);
+        $this->assertNull($this->get($this->url($f))->viewData('completionToken'));
+        $this->assertTrue($f[2]->fresh()->open_slot);
+        $this->assertNull($f[3]->fresh()->completed_at);
+    }
+
     private function fixture(): array
     {
         $this->freezeSecond();

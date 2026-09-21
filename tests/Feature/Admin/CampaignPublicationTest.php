@@ -95,7 +95,7 @@ class CampaignPublicationTest extends TestCase
         $this->assertSame('admin/campaigns/{campaign}/publish', $route->uri());
         $this->assertSame(['web', 'auth', 'role:admin,super_admin', 'throttle:10,1'], $route->gatherMiddleware());
         $matches = collect(Route::getRoutes())->filter(fn ($route) => str_contains($route->uri(), 'campaigns') && preg_match('/publish|pause|cancel|fund|deliver/', $route->uri()));
-        $this->assertCount(1, $matches);
+        $this->assertCount(2, $matches); // Campaign publication and the separate completed-impact publication.
     }
 
     #[DataProvider('administratorRoles')]

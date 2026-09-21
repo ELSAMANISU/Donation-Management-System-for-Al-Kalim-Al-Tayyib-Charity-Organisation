@@ -165,7 +165,7 @@ final class InternalNotificationProjector
                 $notification->type = $intent->notification_type;
                 $notification->data = $data;
                 $notification->read_at = null;
-                $notification->created_at = ($deliveryEvent || $coordinationEvent) ? $event->occurred_at : $attemptedAt;
+                $notification->created_at = ($deliveryEvent || $coordinationEvent || $intent->notification_type === InternalNotificationType::HelpApplicationCompleted) ? $event->occurred_at : $attemptedAt;
                 $notification->save();
             }
 

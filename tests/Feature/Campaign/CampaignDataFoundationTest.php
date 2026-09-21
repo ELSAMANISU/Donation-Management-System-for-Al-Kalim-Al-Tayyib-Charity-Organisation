@@ -27,7 +27,7 @@ class CampaignDataFoundationTest extends TestCase
             'is_urgent', 'priority', 'image_path', 'image_alt_ar', 'image_alt_en', 'expires_at',
             'published_at', 'paused_at', 'pause_reason', 'funded_at', 'aid_delivery_started_at',
             'completed_at', 'cancelled_at', 'cancellation_reason', 'impact_update_ar',
-            'impact_update_en', 'created_by', 'updated_by', 'created_at', 'updated_at', 'deleted_at',
+            'impact_update_en', 'impact_published_at', 'created_by', 'updated_by', 'created_at', 'updated_at', 'deleted_at',
         ];
 
         $this->assertEqualsCanonicalizing($expected, Schema::getColumnListing('campaigns'));

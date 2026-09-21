@@ -70,6 +70,12 @@
             <p>No sandbox instalments yet. / لا توجد دفعات تجريبية بعد.</p>
         @endforelse
         @if(!$administrator)<p>Read-only history / سجل للقراءة فقط</p>@endif
-        <p>Completion and public impact publishing are deferred. / الإكمال ونشر الأثر العام مؤجلان.</p>
+        @if($completionToken)
+            <form method="POST" action="{{ route('admin.aid-delivery.complete', $params) }}" aria-describedby="sandbox-warning">
+                @csrf
+                <input type="hidden" name="completion_token" value="{{ $completionToken }}">
+                <button class="rounded bg-indigo-700 text-white px-4 py-2">Complete assistance / إكمال المساعدة</button>
+            </form>
+        @endif
     </main>
 </x-app-layout>

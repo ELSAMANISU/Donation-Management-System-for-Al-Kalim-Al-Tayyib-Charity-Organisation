@@ -173,8 +173,8 @@ Real payment processing, BigQuery, email notifications, and administrator specia
 3. Funding completion changes its status automatically.
 4. Only after the campaign is 100% funded, an administrator requests synthetic receiving instructions from the beneficiary within the private system. The encrypted details may differ from the earlier general preference and remain excluded from public content and audit payloads.
 5. An eligible administrator records one or more private, auditable simulated aid deliveries after confirmed coordination.
-6. In a later increment after delivery, an administrator publishes a privacy-safe impact update.
-7. The campaign can be completed only after delivery is recorded and the impact update is published.
+6. After exact reconciliation of fully simulated delivered aid, an eligible assigned reviewer or super-admin privately completes the Campaign and Help Application together. Completion releases the application's open slot by setting `open_slot` to null.
+7. An eligible campaign-publication administrator may later draft and optionally publish separate, synthetic, privacy-safe bilingual impact text. Published impact is immutable in this increment. Private delivery data never becomes public.
 
 ## 5. Status lifecycles
 
@@ -197,7 +197,7 @@ The canonical campaign statuses are `draft`, `active`, `paused`, `funded`, `aid_
 - Reaching the target automatically moves an active campaign to funded.
 - Before aid delivery begins, if a refund reduces the raised amount below the target, the campaign automatically moves from `funded` back to `active`.
 - Delivery activity moves a funded campaign into `aid_delivery`.
-- Completion requires recorded delivery and an impact update.
+- Private completion requires exact reconciliation of succeeded funding, the Campaign target and raised totals, and terminal simulated deliveries with proofs. Public impact publication is separate and optional.
 
 ### Transaction statuses
 
@@ -215,6 +215,7 @@ The current canonical Sandbox Donation statuses are `pending`, `succeeded`, `fai
 - On submission, compare verified identity information such as identity or passport number to detect possible duplicate or previous applications. A match creates an administrator-visible warning and authorized links to related applications, but never an automatic rejection; the administrator must document the decision.
 - Campaigns do not require an expiry date.
 - A published campaign has status `active`, with its publication time stored separately in `published_at`.
+- Completed campaigns remain publicly visible after any earlier campaign expiry; unpublished impact drafts remain private.
 - Campaign totals currently derive only from `succeeded` Donations; valid refund adjustments are deferred.
 - Each transaction reference is unique; payment and refund actions are idempotent.
 - Before aid delivery begins, a refund that reduces a funded campaign below its target automatically returns it from `funded` to `active`.
