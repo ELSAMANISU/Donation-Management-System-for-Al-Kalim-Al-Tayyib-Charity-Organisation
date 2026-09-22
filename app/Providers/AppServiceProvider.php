@@ -3,9 +3,11 @@
 namespace App\Providers;
 
 use App\Contracts\DonationGateway;
+use App\Policies\ReportPolicy;
 use App\Services\SandboxDonationGateway;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 
@@ -29,6 +31,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Gate::define('viewReports', [ReportPolicy::class, 'viewReports']);
+        RateLimiter::for('admin-reports', fn (Request $request) => Limit::perMinute(10)->by($request->user()?->id ?? $request->ip()));
+
         foreach (['aid-delivery-complete' => 6, 'impact-draft' => 6, 'impact-publish' => 6, 'aid-delivery-read' => 30, 'aid-delivery-start' => 6, 'aid-delivery-problem' => 6, 'aid-delivery-resume' => 6, 'aid-delivery-success' => 6, 'coordination-read' => 30, 'coordination-start' => 6, 'coordination-respond' => 6, 'coordination-correct' => 6, 'coordination-confirm' => 6, 'coordination-message' => 10, 'donation-entry' => 6, 'donation-outcome' => 10, 'donation-checkout' => 30, 'donation-result' => 30] as $name => $maximum) {
             RateLimiter::for($name, fn (Request $request) => Limit::perMinute($maximum)->by($request->user()?->id ?? $request->ip()));
         }

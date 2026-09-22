@@ -7,6 +7,8 @@ use App\Http\Middleware\EnsureRequiredPasswordHasBeenChanged;
 use App\Http\Middleware\EnsureSandboxDonationsEnabled;
 use App\Http\Middleware\EnsureUserHasRole;
 use App\Http\Middleware\PrivateCoordinationResponse;
+use App\Http\Middleware\PrivateReportResponse;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Contracts\Auth\Middleware\AuthenticatesRequests;
 use Illuminate\Cookie\Middleware\EncryptCookies;
@@ -26,12 +28,13 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->prepend(PrivateReportResponse::class);
         $middleware->web(prepend: [PrivateCoordinationResponse::class]);
         $middleware->prependToPriorityList(AuthenticatesRequests::class, EnsureCoordinationAccount::class);
         $middleware->prependToPriorityList(EncryptCookies::class, EnsureSandboxDonationsEnabled::class);
         // Preserve canonical outcomes and history filters; Form Requests normalize their allowlisted text.
-        $middleware->trimStrings(except: [fn ($request) => PrivateCoordinationResponse::applies($request) || $request->is('admin/help-applications/in-review/*/duplicate-warnings/*/resolve', 'admin/help-applications/in-review/*/decide', 'admin/help-applications/decided', 'admin/help-applications/decided/*', 'ar/cases', 'en/cases', 'ar/cases/*/donate', 'en/cases/*/donate', 'ar/donations/*', 'en/donations/*')]);
-        $middleware->convertEmptyStringsToNull(except: [fn ($request) => PrivateCoordinationResponse::applies($request)]);
+        $middleware->trimStrings(except: [fn ($request) => PrivateReportResponse::applies($request) || PrivateCoordinationResponse::applies($request) || $request->is('admin/help-applications/in-review/*/duplicate-warnings/*/resolve', 'admin/help-applications/in-review/*/decide', 'admin/help-applications/decided', 'admin/help-applications/decided/*', 'ar/cases', 'en/cases', 'ar/cases/*/donate', 'en/cases/*/donate', 'ar/donations/*', 'en/donations/*')]);
+        $middleware->convertEmptyStringsToNull(except: [fn ($request) => PrivateReportResponse::applies($request) || PrivateCoordinationResponse::applies($request)]);
         $middleware->alias([
             'auth' => Authenticate::class,
             'role' => EnsureUserHasRole::class,
@@ -44,6 +47,9 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->respond(function ($response) {
+            if (PrivateReportResponse::applies(request())) {
+                return PrivateReportResponse::protect($response);
+            }
             if (PrivateCoordinationResponse::applies(request())) {
                 if (request()->is('admin/aid-delivery/*', 'help-applications/*/aid-delivery/*') && $response->getStatusCode() >= 400) {
                     $response = response('Private sandbox delivery is unavailable. / التسليم التجريبي الخاص غير متاح.', $response->getStatusCode());
@@ -58,6 +64,10 @@ return Application::configure(basePath: dirname(__DIR__))
             return $response;
         });
         $exceptions->report(function (Throwable $exception) {
+            if (PrivateReportResponse::applies(request())) {
+                // Do not log exception arguments, SQL bindings, or authenticated-user context.
+                return false;
+            }
             if (! (request()->routeIs('donations.*') || PrivateCoordinationResponse::applies(request()))
                 || $exception instanceof AuthenticationException
                 || $exception instanceof ValidationException
@@ -74,6 +84,21 @@ return Application::configure(basePath: dirname(__DIR__))
             return false;
         });
         $exceptions->render(function (Throwable $exception, Request $request) {
+            if (PrivateReportResponse::applies($request)) {
+                if ($exception instanceof AuthenticationException || $exception instanceof HttpResponseException) {
+                    return null;
+                }
+                $status = $exception instanceof HttpExceptionInterface ? $exception->getStatusCode()
+                    : ($exception instanceof AuthorizationException ? 403 : 500);
+                $response = PrivateReportResponse::failure($status);
+                if ($exception instanceof HttpExceptionInterface) {
+                    foreach ($exception->getHeaders() as $name => $value) {
+                        $response->headers->set($name, $value);
+                    }
+                }
+
+                return PrivateReportResponse::protect($response);
+            }
             if (! ($request->routeIs('donations.*') || PrivateCoordinationResponse::applies($request))
                 || $exception instanceof AuthenticationException
                 || $exception instanceof ValidationException

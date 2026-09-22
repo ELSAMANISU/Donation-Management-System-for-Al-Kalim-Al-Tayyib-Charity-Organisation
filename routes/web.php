@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\HelpApplicationController as AdminHelpApplication
 use App\Http\Controllers\Admin\HelpApplicationDecisionController;
 use App\Http\Controllers\Admin\HelpApplicationDuplicateWarningController;
 use App\Http\Controllers\Admin\InReviewHelpApplicationController;
+use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\AidDeliveryController;
 use App\Http\Controllers\Applicant\HelpApplicationController;
@@ -29,6 +30,10 @@ Route::get('/{locale}', HomepageController::class)->whereIn('locale', ['ar', 'en
 Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
+
+Route::get('/admin/reports', ReportController::class)
+    ->middleware(['auth', 'role:admin,super_admin', 'throttle:admin-reports'])
+    ->name('admin.reports.index');
 
 Route::get('/admin', AdminDashboardController::class)
     ->middleware(['auth', 'role:admin,super_admin'])
